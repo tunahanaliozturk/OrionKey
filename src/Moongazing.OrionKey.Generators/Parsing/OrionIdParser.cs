@@ -69,7 +69,25 @@ internal static class OrionIdParser
             : symbol.ContainingNamespace.ToDisplayString();
 
         model = new OrionIdModel(symbol.Name, ns, valueType, strategy);
+        CheckMemberCollisions(symbol, model, diags);
         return true;
+    }
+
+    private static void CheckMemberCollisions(INamedTypeSymbol symbol, OrionIdModel model, List<Diagnostic> diags)
+    {
+        var emitted = new List<string> { "Value", "New", "Empty", "Equals", "GetHashCode", "ToString" };
+        if (model.IsSortable)
+        {
+            emitted.Add("CompareTo");
+        }
+        foreach (var memberName in emitted)
+        {
+            if (!symbol.GetMembers(memberName).IsEmpty)
+            {
+                diags.Add(Diagnostic.Create(OrionKeyDiagnostics.MemberCollision,
+                    symbol.Locations[0], symbol.Name, memberName));
+            }
+        }
     }
 
     private static AttributeData? FindOrionIdAttribute(INamedTypeSymbol symbol)

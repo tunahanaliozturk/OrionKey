@@ -51,6 +51,11 @@ public sealed class OrionIdGenerator : IIncrementalGenerator
             return;
         }
 
+        foreach (var diagnostic in diagnostics)
+        {
+            spc.ReportDiagnostic(diagnostic);
+        }
+
         spc.AddSource($"{model!.Name}.OrionId.g.cs", Emit.CoreBodyEmitter.Emit(model));
 
         var comparable = Emit.ComparableEmitter.Emit(model);

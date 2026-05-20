@@ -52,6 +52,21 @@ public class DiagnosticsTests
     }
 
     [Fact]
+    public void ORIONKEY005_ShouldWarn_WhenStructDeclaresAGeneratedMember()
+    {
+        const string source = """
+            using Moongazing.OrionKey;
+            namespace Demo;
+            [OrionId<System.Guid>]
+            public readonly partial struct OrderId
+            {
+                public int Value => 0;
+            }
+            """;
+        Assert.Contains("ORIONKEY005", DiagnosticIds(source));
+    }
+
+    [Fact]
     public void NoDiagnostics_ForValidDeclaration()
     {
         const string source = """
