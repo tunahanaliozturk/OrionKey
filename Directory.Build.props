@@ -7,9 +7,6 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AnalysisLevel>latest-recommended</AnalysisLevel>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(IsPackable)' != 'false'">
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>CS1591;NU1900;NU1901;NU1902;NU1903;NU1904</NoWarn>
     <Authors>Tunahan Ali Ozturk</Authors>
@@ -19,10 +16,5 @@
     <PackageProjectUrl>https://github.com/tunahanaliozturk/OrionKey</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Version>0.1.0</Version>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(IsPackable)' == 'false'">
-    <TargetFramework>net10.0</TargetFramework>
-    <TargetFrameworks></TargetFrameworks>
   </PropertyGroup>
 </Project>
