@@ -11,6 +11,7 @@ public static class OrionKey
     private static OrionKeyOptions options = new();
     private static SnowflakeIdGenerator? snowflake;
     private static bool configured;
+    private static SequentialState? deterministic;
 
     /// <summary>
     /// Sets process-wide OrionKey configuration. Must be called at most once, before the first id
@@ -39,6 +40,13 @@ public static class OrionKey
     /// <summary>Generates the next Snowflake id.</summary>
     public static long NextSnowflake()
     {
+        lock (Gate)
+        {
+            if (deterministic is not null)
+            {
+                return ++deterministic.Snowflake;
+            }
+        }
         var generator = GetSnowflake();
         var id = generator.Next();
         OrionKeyDiagnostics.RecordGenerated("snowflake", options.EnableMetrics);
@@ -99,6 +107,15 @@ public static class OrionKey
         }
     }
 
+    /// <summary>Switches to deterministic 1,2,3,... generators. For OrionKey.Testing only.</summary>
+    internal static void UseDeterministicGeneratorsForTesting()
+    {
+        lock (Gate)
+        {
+            deterministic = new SequentialState();
+        }
+    }
+
     /// <summary>Resets process state. For OrionKey.Testing only; not part of the public contract.</summary>
     internal static void ResetForTesting()
     {
@@ -107,6 +124,12 @@ public static class OrionKey
             options = new OrionKeyOptions();
             snowflake = null;
             configured = false;
+            deterministic = null;
         }
+    }
+
+    private sealed class SequentialState
+    {
+        public long Snowflake;
     }
 }
