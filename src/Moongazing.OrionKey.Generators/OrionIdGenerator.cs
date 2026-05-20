@@ -54,5 +54,6 @@ public sealed class OrionIdGenerator : IIncrementalGenerator
         }
 
         spc.AddSource($"{model.Name}.OrionId.Json.g.cs", Emit.JsonConverterEmitter.Emit(model));
+        spc.AddSource($"{model.Name}.OrionId.TypeConverter.g.cs", Emit.TypeConverterEmitter.Emit(model));
     }
 }
