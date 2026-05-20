@@ -30,6 +30,22 @@ public class GuidV7FactoryTests
         }
     }
 
+    [Fact]
+    public void NewGuidV7_ShouldBeByteSortable_InBigEndianLayout()
+    {
+        var first = GuidV7Factory.NewGuidV7();
+        Thread.Sleep(3);
+        var second = GuidV7Factory.NewGuidV7();
+
+        Span<byte> a = stackalloc byte[16];
+        Span<byte> b = stackalloc byte[16];
+        first.TryWriteBytes(a, bigEndian: true, out _);
+        second.TryWriteBytes(b, bigEndian: true, out _);
+
+        Assert.True(a.SequenceCompareTo(b) < 0,
+            "GuidV7 big-endian bytes must sort by creation time");
+    }
+
     private static int CompareGuids(Guid a, Guid b)
         => string.CompareOrdinal(a.ToString("N"), b.ToString("N"));
 }

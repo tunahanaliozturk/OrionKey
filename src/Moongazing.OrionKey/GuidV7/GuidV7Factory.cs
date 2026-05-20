@@ -25,15 +25,10 @@ public static class GuidV7Factory
         bytes[3] = (byte)(unixMs >> 16);
         bytes[4] = (byte)(unixMs >> 8);
         bytes[5] = (byte)unixMs;
-        bytes[6] = (byte)((bytes[6] & 0x0F) | 0x70);
-        bytes[8] = (byte)((bytes[8] & 0x3F) | 0x80);
+        bytes[6] = (byte)((bytes[6] & 0x0F) | 0x70);  // version 7
+        bytes[8] = (byte)((bytes[8] & 0x3F) | 0x80);  // variant 0b10
 
-        return new Guid(
-            (bytes[0] << 24) | (bytes[1] << 16) | (bytes[2] << 8) | bytes[3],
-            (short)((bytes[4] << 8) | bytes[5]),
-            (short)((bytes[6] << 8) | bytes[7]),
-            bytes[8], bytes[9], bytes[10], bytes[11],
-            bytes[12], bytes[13], bytes[14], bytes[15]);
+        return new Guid(bytes, bigEndian: true);
     }
 #endif
 }
