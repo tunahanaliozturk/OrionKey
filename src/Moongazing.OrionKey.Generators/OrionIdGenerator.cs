@@ -25,11 +25,17 @@ public sealed class OrionIdGenerator : IIncrementalGenerator
             predicate: static (_, _) => true,
             transform: static (ctx, _) => ctx.TargetSymbol as INamedTypeSymbol);
 
-        context.RegisterSourceOutput(oneArg, static (spc, symbol) => Handle(spc, symbol));
-        context.RegisterSourceOutput(twoArg, static (spc, symbol) => Handle(spc, symbol));
+        var efCoreReferenced = context.CompilationProvider.Select(static (compilation, _) =>
+            compilation.GetTypeByMetadataName(
+                "Microsoft.EntityFrameworkCore.Storage.ValueConversion.ValueConverter`2") is not null);
+
+        context.RegisterSourceOutput(oneArg.Combine(efCoreReferenced),
+            static (spc, pair) => Handle(spc, pair.Left, pair.Right));
+        context.RegisterSourceOutput(twoArg.Combine(efCoreReferenced),
+            static (spc, pair) => Handle(spc, pair.Left, pair.Right));
     }
 
-    private static void Handle(SourceProductionContext spc, INamedTypeSymbol? symbol)
+    private static void Handle(SourceProductionContext spc, INamedTypeSymbol? symbol, bool efCoreReferenced)
     {
         if (symbol is null)
         {
@@ -56,5 +62,10 @@ public sealed class OrionIdGenerator : IIncrementalGenerator
         spc.AddSource($"{model.Name}.OrionId.Json.g.cs", Emit.JsonConverterEmitter.Emit(model));
         spc.AddSource($"{model.Name}.OrionId.TypeConverter.g.cs", Emit.TypeConverterEmitter.Emit(model));
         spc.AddSource($"{model.Name}.OrionId.Parsable.g.cs", Emit.ParsableEmitter.Emit(model));
+
+        if (efCoreReferenced)
+        {
+            spc.AddSource($"{model.Name}.OrionId.EfCore.g.cs", Emit.EfCoreConverterEmitter.Emit(model));
+        }
     }
 }

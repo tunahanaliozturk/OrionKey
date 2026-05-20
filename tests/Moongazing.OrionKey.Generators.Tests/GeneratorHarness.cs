@@ -16,6 +16,10 @@ internal static class GeneratorHarness
         // absent from AppDomain.CurrentDomain.GetAssemblies().
         _ = typeof(global::Moongazing.OrionKey.OrionIdAttribute<>).Assembly;
 
+        // Force the EF Core assembly to load so the conditional ValueConverter emitter
+        // sees Microsoft.EntityFrameworkCore as a referenced assembly.
+        _ = typeof(global::Microsoft.EntityFrameworkCore.Storage.ValueConversion.ValueConverter<,>).Assembly;
+
         var references = AppDomain.CurrentDomain.GetAssemblies()
             .Where(a => !a.IsDynamic && !string.IsNullOrEmpty(a.Location))
             .Select(a => MetadataReference.CreateFromFile(a.Location))
