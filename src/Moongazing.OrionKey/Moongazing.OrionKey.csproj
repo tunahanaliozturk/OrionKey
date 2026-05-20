@@ -10,8 +10,12 @@
                       OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(OutputPath)\..\..\Moongazing.OrionKey.Generators\$(Configuration)\netstandard2.0\Moongazing.OrionKey.Generators.dll"
-          Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     <None Include="..\..\docs\logo.png" Pack="true" PackagePath="" Visible="false" />
   </ItemGroup>
+  <Target Name="PackOrionKeyGenerator" BeforeTargets="GenerateNuspec;_GetPackageFiles">
+    <ItemGroup>
+      <_OrionKeyGeneratorDll Include="$(MSBuildThisFileDirectory)..\Moongazing.OrionKey.Generators\bin\$(Configuration)\netstandard2.0\Moongazing.OrionKey.Generators.dll" />
+      <None Include="@(_OrionKeyGeneratorDll)" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" Condition="Exists('%(Identity)')" />
+    </ItemGroup>
+  </Target>
 </Project>
