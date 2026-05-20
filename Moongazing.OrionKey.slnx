@@ -1,0 +1,19 @@
+<Solution>
+  <Folder Name="/bench/">
+    <Project Path="bench/Moongazing.OrionKey.Benchmarks/Moongazing.OrionKey.Benchmarks.csproj" />
+  </Folder>
+  <Folder Name="/sample/">
+    <Project Path="sample/Moongazing.OrionKey.Sample/Moongazing.OrionKey.Sample.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Moongazing.OrionKey.Generators/Moongazing.OrionKey.Generators.csproj" />
+    <Project Path="src/Moongazing.OrionKey.Testing/Moongazing.OrionKey.Testing.csproj" />
+    <Project Path="src/Moongazing.OrionKey/Moongazing.OrionKey.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Moongazing.OrionKey.Generators.Tests/Moongazing.OrionKey.Generators.Tests.csproj" />
+    <Project Path="tests/Moongazing.OrionKey.IntegrationTests/Moongazing.OrionKey.IntegrationTests.csproj" />
+    <Project Path="tests/Moongazing.OrionKey.Testing.Tests/Moongazing.OrionKey.Testing.Tests.csproj" />
+    <Project Path="tests/Moongazing.OrionKey.Tests/Moongazing.OrionKey.Tests.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <PackageId>OrionKey.Testing</PackageId>
+    <Description>Deterministic ID generators for testing code that uses OrionKey strongly-typed IDs.</Description>
+    <PackageTags>strongly-typed-id;testing;orionkey</PackageTags>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Moongazing.OrionKey\Moongazing.OrionKey.csproj" />
+  </ItemGroup>
+</Project>
