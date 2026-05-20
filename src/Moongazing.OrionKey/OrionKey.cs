@@ -56,6 +56,13 @@ public static class OrionKey
     /// <summary>Generates a new ULID string.</summary>
     public static string NewUlid()
     {
+        lock (Gate)
+        {
+            if (deterministic is not null)
+            {
+                return (++deterministic.Ulid).ToString("D26", System.Globalization.CultureInfo.InvariantCulture);
+            }
+        }
         var id = UlidFactory.NewUlid();
         OrionKeyDiagnostics.RecordGenerated("ulid", options.EnableMetrics);
         return id;
@@ -64,6 +71,13 @@ public static class OrionKey
     /// <summary>Generates a new NanoId string.</summary>
     public static string NewNanoId()
     {
+        lock (Gate)
+        {
+            if (deterministic is not null)
+            {
+                return (++deterministic.NanoId).ToString("D21", System.Globalization.CultureInfo.InvariantCulture);
+            }
+        }
         var id = NanoIdFactory.NewNanoId();
         OrionKeyDiagnostics.RecordGenerated("nanoid", options.EnableMetrics);
         return id;
@@ -72,6 +86,16 @@ public static class OrionKey
     /// <summary>Generates a new version-7 GUID.</summary>
     public static Guid NewGuidV7()
     {
+        lock (Gate)
+        {
+            if (deterministic is not null)
+            {
+                var n = ++deterministic.GuidV7;
+                Span<byte> b = stackalloc byte[16];
+                System.Buffers.Binary.BinaryPrimitives.WriteInt64BigEndian(b.Slice(8), n);
+                return new Guid(b, bigEndian: true);
+            }
+        }
         var id = GuidV7Factory.NewGuidV7();
         OrionKeyDiagnostics.RecordGenerated("guidv7", options.EnableMetrics);
         return id;
@@ -131,5 +155,8 @@ public static class OrionKey
     private sealed class SequentialState
     {
         public long Snowflake;
+        public long Ulid;
+        public long NanoId;
+        public long GuidV7;
     }
 }
