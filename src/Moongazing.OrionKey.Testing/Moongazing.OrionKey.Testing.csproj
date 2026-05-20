@@ -4,11 +4,13 @@
     <Description>Deterministic ID generators for testing code that uses OrionKey strongly-typed IDs.</Description>
     <PackageTags>strongly-typed-id;testing;orionkey</PackageTags>
     <PackageIcon>icon.png</PackageIcon>
+    <PackageReadmeFile>docs/README.md</PackageReadmeFile>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Moongazing.OrionKey\Moongazing.OrionKey.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\docs\icon.png" Pack="true" PackagePath="" Visible="false" />
+    <None Include="docs/README.md" Pack="true" PackagePath="docs/" />
   </ItemGroup>
 </Project>
