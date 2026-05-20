@@ -7,5 +7,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Moongazing.OrionKey\Moongazing.OrionKey.csproj" />
+    <ProjectReference Include="..\..\src\Moongazing.OrionKey.Generators\Moongazing.OrionKey.Generators.csproj"
+                      OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 </Project>
