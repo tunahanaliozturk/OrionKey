@@ -14,6 +14,7 @@
   </ItemGroup>
   <ItemGroup>
     <Using Include="Xunit" />
+    <Using Include="Moongazing.OrionKey.Generators.Model.ValueType" Alias="ValueType" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Moongazing.OrionKey.Generators\Moongazing.OrionKey.Generators.csproj" />
