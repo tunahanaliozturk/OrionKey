@@ -3,14 +3,14 @@
     <PackageId>OrionKey</PackageId>
     <Description>Source-generated strongly-typed IDs for .NET. One attribute emits equality, comparison, New() factory, EF Core ValueConverter, System.Text.Json converter, TypeConverter, and IParsable/ISpanParsable. Strategies: Guid, GuidV7, Snowflake, ULID, NanoId.</Description>
     <PackageTags>strongly-typed-id;source-generator;ddd;guid;snowflake;ulid;nanoid;ef-core</PackageTags>
-    <PackageIcon>logo.png</PackageIcon>
+    <PackageIcon>icon.png</PackageIcon>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Moongazing.OrionKey.Generators\Moongazing.OrionKey.Generators.csproj"
                       OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\docs\logo.png" Pack="true" PackagePath="" Visible="false" />
+    <None Include="..\..\docs\icon.png" Pack="true" PackagePath="" Visible="false" />
   </ItemGroup>
   <Target Name="PackOrionKeyGenerator" BeforeTargets="GenerateNuspec;_GetPackageFiles">
     <ItemGroup>

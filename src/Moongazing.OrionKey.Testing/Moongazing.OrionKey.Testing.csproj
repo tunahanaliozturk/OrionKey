@@ -3,12 +3,12 @@
     <PackageId>OrionKey.Testing</PackageId>
     <Description>Deterministic ID generators for testing code that uses OrionKey strongly-typed IDs.</Description>
     <PackageTags>strongly-typed-id;testing;orionkey</PackageTags>
-    <PackageIcon>logo.png</PackageIcon>
+    <PackageIcon>icon.png</PackageIcon>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Moongazing.OrionKey\Moongazing.OrionKey.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\docs\logo.png" Pack="true" PackagePath="" Visible="false" />
+    <None Include="..\..\docs\icon.png" Pack="true" PackagePath="" Visible="false" />
   </ItemGroup>
 </Project>
