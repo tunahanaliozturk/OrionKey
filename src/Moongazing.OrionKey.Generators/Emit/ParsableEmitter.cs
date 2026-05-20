@@ -52,6 +52,14 @@ internal static class ParsableEmitter
         sb.AppendLine($"    static bool global::System.ISpanParsable<{name}>.TryParse("
                     + "global::System.ReadOnlySpan<char> s, global::System.IFormatProvider? provider, "
                     + $"out {name} result) {{ {TrySpanBody(model)} }}");
+        // Public TryParse overloads so ASP.NET Core minimal-API route binding can
+        // discover them: ParameterBindingMethodCache only accepts public static
+        // TryParse methods declared on the type, not explicit interface members.
+        sb.AppendLine($"    public static bool TryParse("
+                    + "string? s, global::System.IFormatProvider? provider, "
+                    + $"out {name} result) {{ {tryBody} }}");
+        sb.AppendLine($"    public static bool TryParse("
+                    + $"string? s, out {name} result) => TryParse(s, null, out result);");
         sb.AppendLine("}");
         return sb.ToString();
     }
