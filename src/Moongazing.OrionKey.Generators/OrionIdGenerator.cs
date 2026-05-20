@@ -46,5 +46,11 @@ public sealed class OrionIdGenerator : IIncrementalGenerator
         }
 
         spc.AddSource($"{model!.Name}.OrionId.g.cs", Emit.CoreBodyEmitter.Emit(model));
+
+        var comparable = Emit.ComparableEmitter.Emit(model);
+        if (comparable is not null)
+        {
+            spc.AddSource($"{model.Name}.OrionId.Comparable.g.cs", comparable);
+        }
     }
 }
