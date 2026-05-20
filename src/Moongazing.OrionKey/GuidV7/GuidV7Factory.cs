@@ -1,6 +1,6 @@
 using System.Security.Cryptography;
 
-namespace Moongazing.OrionKey.GuidV7;
+namespace Moongazing.OrionKey;
 
 /// <summary>
 /// Generates version-7 UUIDs (RFC 9562): a 48-bit Unix-millisecond timestamp followed by

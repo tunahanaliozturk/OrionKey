@@ -1,4 +1,4 @@
-namespace Moongazing.OrionKey.Snowflake;
+namespace Moongazing.OrionKey;
 
 /// <summary>How a Snowflake worker id was determined.</summary>
 public enum WorkerIdSource

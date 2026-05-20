@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 
-namespace Moongazing.OrionKey.Diagnostics;
+namespace Moongazing.OrionKey;
 
 /// <summary>OrionKey runtime diagnostics: a one-time worker-id warning and an opt-in counter.</summary>
 public static class OrionKeyDiagnostics

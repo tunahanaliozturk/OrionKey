@@ -1,4 +1,4 @@
-namespace Moongazing.OrionKey.Snowflake;
+namespace Moongazing.OrionKey;
 
 /// <summary>
 /// Twitter-Snowflake id generator: <c>41-bit ms-timestamp | 10-bit worker | 12-bit sequence</c>.

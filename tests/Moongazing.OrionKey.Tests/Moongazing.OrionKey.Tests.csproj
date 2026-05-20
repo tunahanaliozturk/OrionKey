@@ -3,7 +3,7 @@
     <IsPackable>false</IsPackable>
     <TargetFramework>net10.0</TargetFramework>
     <TargetFrameworks></TargetFrameworks>
-    <NoWarn>$(NoWarn);CA1707</NoWarn>
+    <NoWarn>$(NoWarn);CA1707;CA1711</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />

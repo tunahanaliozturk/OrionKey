@@ -1,5 +1,3 @@
-using Moongazing.OrionKey.GuidV7;
-
 namespace Moongazing.OrionKey.Tests;
 
 public class GuidV7FactoryTests

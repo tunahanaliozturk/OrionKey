@@ -1,5 +1,3 @@
-using Moongazing.OrionKey.Ulid;
-
 namespace Moongazing.OrionKey.Tests;
 
 public class UlidFactoryTests

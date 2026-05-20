@@ -1,5 +1,3 @@
-using Moongazing.OrionKey.Snowflake;
-
 namespace Moongazing.OrionKey.Tests;
 
 public class WorkerIdResolverTests

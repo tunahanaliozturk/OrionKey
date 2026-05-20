@@ -1,5 +1,3 @@
-using Moongazing.OrionKey.NanoId;
-
 namespace Moongazing.OrionKey.Tests;
 
 public class NanoIdFactoryTests

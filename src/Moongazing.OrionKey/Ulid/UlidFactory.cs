@@ -1,6 +1,6 @@
 using System.Security.Cryptography;
 
-namespace Moongazing.OrionKey.Ulid;
+namespace Moongazing.OrionKey;
 
 /// <summary>
 /// Generates ULIDs: a 48-bit millisecond timestamp followed by 80 bits of randomness,

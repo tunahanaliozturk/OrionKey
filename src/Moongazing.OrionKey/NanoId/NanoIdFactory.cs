@@ -1,6 +1,6 @@
 using System.Security.Cryptography;
 
-namespace Moongazing.OrionKey.NanoId;
+namespace Moongazing.OrionKey;
 
 /// <summary>
 /// Generates NanoIds: 21 characters drawn uniformly from a 64-character URL-safe alphabet,
