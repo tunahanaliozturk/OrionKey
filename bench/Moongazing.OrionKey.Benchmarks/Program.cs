@@ -1,1 +1,4 @@
-System.Console.WriteLine("OrionKey benchmarks");
+using BenchmarkDotNet.Running;
+using Moongazing.OrionKey.Benchmarks;
+
+BenchmarkRunner.Run<IdGenerationBenchmarks>();

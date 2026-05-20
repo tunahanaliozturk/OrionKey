@@ -2,8 +2,10 @@
   <PropertyGroup>
     <IsPackable>false</IsPackable>
     <TargetFramework>net10.0</TargetFramework>
-    <TargetFrameworks></TargetFrameworks>
+    <TargetFrameworks>net10.0</TargetFrameworks>
     <OutputType>Exe</OutputType>
+    <!-- BenchmarkDotNet requires benchmark methods to be instance members. -->
+    <NoWarn>$(NoWarn);CA1822</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.14.0" />
