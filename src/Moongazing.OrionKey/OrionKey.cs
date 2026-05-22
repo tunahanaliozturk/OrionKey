@@ -101,6 +101,74 @@ public static class OrionKey
         return id;
     }
 
+    /// <summary>Generates a new CUID2 string.</summary>
+    public static string NewCuid2()
+    {
+        lock (Gate)
+        {
+            if (deterministic is not null)
+            {
+                return (++deterministic.Cuid2).ToString("D24", System.Globalization.CultureInfo.InvariantCulture);
+            }
+        }
+        var id = Cuid2Factory.NewCuid2();
+        OrionKeyDiagnostics.RecordGenerated("cuid2", options.EnableMetrics);
+        return id;
+    }
+
+    /// <summary>Generates a new KSUID string.</summary>
+    public static string NewKsuid()
+    {
+        lock (Gate)
+        {
+            if (deterministic is not null)
+            {
+                return (++deterministic.Ksuid).ToString("D27", System.Globalization.CultureInfo.InvariantCulture);
+            }
+        }
+        var id = KsuidFactory.NewKsuid();
+        OrionKeyDiagnostics.RecordGenerated("ksuid", options.EnableMetrics);
+        return id;
+    }
+
+    /// <summary>Generates a new ObjectId string.</summary>
+    public static string NewObjectId()
+    {
+        lock (Gate)
+        {
+            if (deterministic is not null)
+            {
+                return (++deterministic.ObjectId).ToString("D24", System.Globalization.CultureInfo.InvariantCulture);
+            }
+        }
+        var id = ObjectIdFactory.NewObjectId();
+        OrionKeyDiagnostics.RecordGenerated("objectid", options.EnableMetrics);
+        return id;
+    }
+
+    /// <summary>Generates a new sequential GUID.</summary>
+    public static Guid NewSequentialGuid()
+    {
+        lock (Gate)
+        {
+            if (deterministic is not null)
+            {
+                var n = ++deterministic.SequentialGuid;
+                Span<byte> b = stackalloc byte[16];
+                b[10] = (byte)(n >> 40);
+                b[11] = (byte)(n >> 32);
+                b[12] = (byte)(n >> 24);
+                b[13] = (byte)(n >> 16);
+                b[14] = (byte)(n >> 8);
+                b[15] = (byte)n;
+                return new Guid(b);
+            }
+        }
+        var id = SequentialGuidFactory.NewSequentialGuid();
+        OrionKeyDiagnostics.RecordGenerated("sequentialguid", options.EnableMetrics);
+        return id;
+    }
+
     private static SnowflakeIdGenerator GetSnowflake()
     {
         if (snowflake is not null)
@@ -158,5 +226,9 @@ public static class OrionKey
         public long Ulid;
         public long NanoId;
         public long GuidV7;
+        public long Cuid2;
+        public long Ksuid;
+        public long ObjectId;
+        public long SequentialGuid;
     }
 }

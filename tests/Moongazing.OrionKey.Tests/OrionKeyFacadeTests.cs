@@ -28,4 +28,28 @@ public class OrionKeyFacadeTests
     {
         Assert.NotEqual(Guid.Empty, OrionKey.NewGuidV7());
     }
+
+    [Fact]
+    public void NewCuid2_ShouldReturn24CharacterString()
+    {
+        Assert.Equal(24, OrionKey.NewCuid2().Length);
+    }
+
+    [Fact]
+    public void NewKsuid_ShouldReturn27CharacterString()
+    {
+        Assert.Equal(27, OrionKey.NewKsuid().Length);
+    }
+
+    [Fact]
+    public void NewObjectId_ShouldReturn24CharacterString()
+    {
+        Assert.Equal(24, OrionKey.NewObjectId().Length);
+    }
+
+    [Fact]
+    public void NewSequentialGuid_ShouldNotReturnEmptyGuid()
+    {
+        Assert.NotEqual(Guid.Empty, OrionKey.NewSequentialGuid());
+    }
 }
