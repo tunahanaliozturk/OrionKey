@@ -16,6 +16,7 @@ public sealed class OrionIdAttribute<TValue> : Attribute;
 /// </summary>
 /// <typeparam name="TValue">Underlying primitive type.</typeparam>
 /// <typeparam name="TStrategy">Generation strategy: <see cref="Snowflake"/>, <see cref="Ulid"/>,
-/// <see cref="NanoId"/>, or <see cref="GuidV7"/>.</typeparam>
+/// <see cref="NanoId"/>, <see cref="GuidV7"/>, <see cref="Cuid2"/>, <see cref="Ksuid"/>,
+/// <see cref="ObjectId"/>, or <see cref="SequentialGuid"/>.</typeparam>
 [AttributeUsage(AttributeTargets.Struct, Inherited = false, AllowMultiple = false)]
 public sealed class OrionIdAttribute<TValue, TStrategy> : Attribute;

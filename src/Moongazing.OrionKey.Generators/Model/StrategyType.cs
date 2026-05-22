@@ -8,4 +8,8 @@ internal enum StrategyType
     Ulid,
     NanoId,
     GuidV7,
+    Cuid2,
+    Ksuid,
+    ObjectId,
+    SequentialGuid,
 }
