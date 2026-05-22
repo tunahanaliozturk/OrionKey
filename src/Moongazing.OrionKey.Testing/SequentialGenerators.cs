@@ -34,3 +34,42 @@ public sealed class SequentialNanoId
         return n.ToString("D21", System.Globalization.CultureInfo.InvariantCulture);
     }
 }
+
+/// <summary>Produces distinct 24-character CUID2-shaped strings for deterministic tests.</summary>
+public sealed class SequentialCuid2
+{
+    private long current;
+
+    /// <summary>Returns the next sequential CUID2-shaped string.</summary>
+    public string Next()
+    {
+        var n = System.Threading.Interlocked.Increment(ref current);
+        return n.ToString("D24", System.Globalization.CultureInfo.InvariantCulture);
+    }
+}
+
+/// <summary>Produces ascending 27-character KSUID-shaped strings for deterministic tests.</summary>
+public sealed class SequentialKsuid
+{
+    private long current;
+
+    /// <summary>Returns the next sequential KSUID-shaped string.</summary>
+    public string Next()
+    {
+        var n = System.Threading.Interlocked.Increment(ref current);
+        return n.ToString("D27", System.Globalization.CultureInfo.InvariantCulture);
+    }
+}
+
+/// <summary>Produces ascending 24-character ObjectId-shaped strings for deterministic tests.</summary>
+public sealed class SequentialObjectId
+{
+    private long current;
+
+    /// <summary>Returns the next sequential ObjectId-shaped string.</summary>
+    public string Next()
+    {
+        var n = System.Threading.Interlocked.Increment(ref current);
+        return n.ToString("D24", System.Globalization.CultureInfo.InvariantCulture);
+    }
+}

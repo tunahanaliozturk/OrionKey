@@ -30,4 +30,32 @@ public class SequentialGeneratorsTests
         Assert.NotEqual(gen.Next(), gen.Next());
         Assert.Equal(21, new SequentialNanoId().Next().Length);
     }
+
+    [Fact]
+    public void SequentialCuid2_ShouldProduce24CharDistinctValues()
+    {
+        var gen = new SequentialCuid2();
+        Assert.NotEqual(gen.Next(), gen.Next());
+        Assert.Equal(24, new SequentialCuid2().Next().Length);
+    }
+
+    [Fact]
+    public void SequentialKsuid_ShouldProduce27CharAscendingValues()
+    {
+        var gen = new SequentialKsuid();
+        var first = gen.Next();
+        var second = gen.Next();
+        Assert.Equal(27, first.Length);
+        Assert.True(string.CompareOrdinal(first, second) < 0);
+    }
+
+    [Fact]
+    public void SequentialObjectId_ShouldProduce24CharAscendingValues()
+    {
+        var gen = new SequentialObjectId();
+        var first = gen.Next();
+        var second = gen.Next();
+        Assert.Equal(24, first.Length);
+        Assert.True(string.CompareOrdinal(first, second) < 0);
+    }
 }
