@@ -30,9 +30,13 @@ argument selects a generation strategy:
 |---|---|---|---|
 | `[OrionId<Guid>]` | Guid | `Guid.NewGuid()` | no |
 | `[OrionId<Guid, GuidV7>]` | Guid | UUIDv7 | yes |
+| `[OrionId<Guid, SequentialGuid>]` | Guid | SQL Server-ordered sequential GUID | yes |
 | `[OrionId<long, Snowflake>]` | long | Snowflake | yes |
 | `[OrionId<string, Ulid>]` | string | ULID | yes |
+| `[OrionId<string, Ksuid>]` | string | KSUID | yes |
+| `[OrionId<string, ObjectId>]` | string | MongoDB ObjectId (24-char hex) | yes |
 | `[OrionId<string, NanoId>]` | string | NanoId | no |
+| `[OrionId<string, Cuid2>]` | string | CUID2 | no |
 | `[OrionId<int>]` / `[OrionId<long>]` | int/long | none (DB identity) | n/a |
 
 The `int` and `long` integer forms have no `New()` factory; they model ids assigned
@@ -45,7 +49,7 @@ For every annotated struct the generator emits, as `partial` companions:
 - The struct body itself: a `Value` member, a `New()` factory (strategy-backed types), and
   value-based `IEquatable` equality with `==` / `!=`.
 - An `IComparable` / `IComparable<T>` implementation, emitted only for sortable strategies
-  (`GuidV7`, `Snowflake`, `Ulid`).
+  (`GuidV7`, `SequentialGuid`, `Snowflake`, `Ulid`, `Ksuid`, `ObjectId`).
 - A `System.Text.Json` `JsonConverter` so the id serializes as its underlying value.
 - A `TypeConverter` for framework conversions and ASP.NET Core model binding.
 - `IParsable<T>` and `ISpanParsable<T>` implementations for allocation-aware parsing.

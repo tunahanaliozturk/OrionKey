@@ -9,7 +9,7 @@ public static class OrionKeyDiagnostics
     /// <summary>The OrionKey meter name.</summary>
     public const string MeterName = "Moongazing.OrionKey";
 
-    private static readonly Meter Meter = new(MeterName, "0.1.0");
+    private static readonly Meter Meter = new(MeterName, "0.2.0");
     private static readonly Counter<long> IdsGenerated =
         Meter.CreateCounter<long>("orionkey.ids.generated");
 
