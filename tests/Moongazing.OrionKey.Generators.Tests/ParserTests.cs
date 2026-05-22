@@ -74,4 +74,71 @@ public class ParserTests
         Assert.False(model!.GeneratesNew);
         Assert.False(model.IsSortable);
     }
+
+    [Fact]
+    public void Parse_ShouldResolveCuid2Strategy()
+    {
+        var symbol = FirstStruct("""
+            using Moongazing.OrionKey;
+            namespace Demo;
+            [OrionId<string, Cuid2>] public readonly partial struct AccountId;
+            """, out _);
+
+        var ok = OrionIdParser.TryParse(symbol, out var model, out var diagnostics);
+
+        Assert.True(ok);
+        Assert.Equal(StrategyType.Cuid2, model!.Strategy);
+        Assert.Empty(diagnostics);
+    }
+
+    [Fact]
+    public void Parse_ShouldResolveSequentialGuidStrategy()
+    {
+        var symbol = FirstStruct("""
+            using Moongazing.OrionKey;
+            namespace Demo;
+            [OrionId<System.Guid, SequentialGuid>] public readonly partial struct InvoiceId;
+            """, out _);
+
+        var ok = OrionIdParser.TryParse(symbol, out var model, out var diagnostics);
+
+        Assert.True(ok);
+        Assert.Equal(StrategyType.SequentialGuid, model!.Strategy);
+        Assert.Empty(diagnostics);
+    }
+
+    [Fact]
+    public void Parse_ShouldResolveKsuidAndObjectIdStrategies()
+    {
+        var ksuid = FirstStruct("""
+            using Moongazing.OrionKey;
+            namespace Demo;
+            [OrionId<string, Ksuid>] public readonly partial struct EventId;
+            """, out _);
+        var objectId = FirstStruct("""
+            using Moongazing.OrionKey;
+            namespace Demo;
+            [OrionId<string, ObjectId>] public readonly partial struct DocumentId;
+            """, out _);
+
+        Assert.True(OrionIdParser.TryParse(ksuid, out var km, out _));
+        Assert.True(OrionIdParser.TryParse(objectId, out var om, out _));
+        Assert.Equal(StrategyType.Ksuid, km!.Strategy);
+        Assert.Equal(StrategyType.ObjectId, om!.Strategy);
+    }
+
+    [Fact]
+    public void Parse_ShouldRejectCuid2WithGuidValue()
+    {
+        var symbol = FirstStruct("""
+            using Moongazing.OrionKey;
+            namespace Demo;
+            [OrionId<System.Guid, Cuid2>] public readonly partial struct BadId;
+            """, out _);
+
+        var ok = OrionIdParser.TryParse(symbol, out _, out var diagnostics);
+
+        Assert.False(ok);
+        Assert.Contains(diagnostics, d => d.Id == "ORIONKEY004");
+    }
 }

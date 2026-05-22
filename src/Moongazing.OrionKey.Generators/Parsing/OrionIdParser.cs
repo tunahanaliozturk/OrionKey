@@ -151,6 +151,10 @@ internal static class OrionIdParser
             "Moongazing.OrionKey.Ulid" => StrategyType.Ulid,
             "Moongazing.OrionKey.NanoId" => StrategyType.NanoId,
             "Moongazing.OrionKey.GuidV7" => StrategyType.GuidV7,
+            "Moongazing.OrionKey.Cuid2" => StrategyType.Cuid2,
+            "Moongazing.OrionKey.Ksuid" => StrategyType.Ksuid,
+            "Moongazing.OrionKey.ObjectId" => StrategyType.ObjectId,
+            "Moongazing.OrionKey.SequentialGuid" => StrategyType.SequentialGuid,
             _ => StrategyType.None,
         };
         return strategy != StrategyType.None;
@@ -163,6 +167,10 @@ internal static class OrionIdParser
         StrategyType.Ulid => value == ValueType.String,
         StrategyType.NanoId => value == ValueType.String,
         StrategyType.GuidV7 => value == ValueType.Guid,
+        StrategyType.Cuid2 => value == ValueType.String,
+        StrategyType.Ksuid => value == ValueType.String,
+        StrategyType.ObjectId => value == ValueType.String,
+        StrategyType.SequentialGuid => value == ValueType.Guid,
         _ => false,
     };
 }

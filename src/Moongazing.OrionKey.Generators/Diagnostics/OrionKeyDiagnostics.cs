@@ -18,7 +18,7 @@ internal static class OrionKeyDiagnostics
 
     public static readonly DiagnosticDescriptor StringRequiresStrategy = new(
         "ORIONKEY003", "string OrionId requires an explicit strategy",
-        "'{0}' uses a string value type, which requires an explicit strategy (Ulid or NanoId)",
+        "'{0}' uses a string value type, which requires an explicit strategy",
         Category, DiagnosticSeverity.Error, isEnabledByDefault: true);
 
     public static readonly DiagnosticDescriptor IncompatibleStrategy = new(
