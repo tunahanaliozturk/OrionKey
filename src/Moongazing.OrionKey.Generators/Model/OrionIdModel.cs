@@ -11,7 +11,12 @@ internal sealed record OrionIdModel(
     public bool GeneratesNew => Strategy != StrategyType.None || ValueType == ValueType.Guid;
 
     /// <summary>True when the strategy produces creation-ordered ids (gets <c>IComparable</c>).</summary>
-    public bool IsSortable => Strategy is StrategyType.Snowflake or StrategyType.Ulid or StrategyType.GuidV7;
+    public bool IsSortable => Strategy is StrategyType.Snowflake
+        or StrategyType.Ulid
+        or StrategyType.GuidV7
+        or StrategyType.Ksuid
+        or StrategyType.ObjectId
+        or StrategyType.SequentialGuid;
 
     /// <summary>The fully-qualified C# keyword/type of the underlying value.</summary>
     public string ValueKeyword => ValueType switch
