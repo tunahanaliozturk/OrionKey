@@ -50,4 +50,32 @@ public class CoreBodyTests
         var output = Generate("OrionId<int>", "LineId");
         Assert.DoesNotContain("New()", output);
     }
+
+    [Fact]
+    public void Emits_New_ForCuid2_DelegatingToFacade()
+    {
+        var output = Generate("OrionId<string, Cuid2>", "AccountId");
+        Assert.Contains("global::Moongazing.OrionKey.OrionKey.NewCuid2()", output);
+    }
+
+    [Fact]
+    public void Emits_New_ForKsuid_DelegatingToFacade()
+    {
+        var output = Generate("OrionId<string, Ksuid>", "EventId");
+        Assert.Contains("global::Moongazing.OrionKey.OrionKey.NewKsuid()", output);
+    }
+
+    [Fact]
+    public void Emits_New_ForObjectId_DelegatingToFacade()
+    {
+        var output = Generate("OrionId<string, ObjectId>", "DocumentId");
+        Assert.Contains("global::Moongazing.OrionKey.OrionKey.NewObjectId()", output);
+    }
+
+    [Fact]
+    public void Emits_New_ForSequentialGuid_DelegatingToFacade()
+    {
+        var output = Generate("OrionId<System.Guid, SequentialGuid>", "InvoiceId");
+        Assert.Contains("global::Moongazing.OrionKey.OrionKey.NewSequentialGuid()", output);
+    }
 }

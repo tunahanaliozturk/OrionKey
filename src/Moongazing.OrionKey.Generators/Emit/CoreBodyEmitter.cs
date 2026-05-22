@@ -54,6 +54,10 @@ internal static class CoreBodyEmitter
         StrategyType.Ulid => "global::Moongazing.OrionKey.OrionKey.NewUlid()",
         StrategyType.NanoId => "global::Moongazing.OrionKey.OrionKey.NewNanoId()",
         StrategyType.GuidV7 => "global::Moongazing.OrionKey.OrionKey.NewGuidV7()",
+        StrategyType.Cuid2 => "global::Moongazing.OrionKey.OrionKey.NewCuid2()",
+        StrategyType.Ksuid => "global::Moongazing.OrionKey.OrionKey.NewKsuid()",
+        StrategyType.ObjectId => "global::Moongazing.OrionKey.OrionKey.NewObjectId()",
+        StrategyType.SequentialGuid => "global::Moongazing.OrionKey.OrionKey.NewSequentialGuid()",
         StrategyType.None when model.ValueType == ValueType.Guid => "global::System.Guid.NewGuid()",
         _ => throw new System.InvalidOperationException("New() requested for a non-generating model."),
     };
