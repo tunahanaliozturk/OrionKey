@@ -98,7 +98,7 @@ warning. In any multi-instance deployment you should pin the worker ID explicitl
 
 Id generation throughput, measured with BenchmarkDotNet. The `--job short` switch was
 passed but BenchmarkDotNet 0.14.0 ran the `DefaultJob` regardless; the full run still
-completed in roughly 2.5 minutes and produced the statistically stable numbers below.
+completed in roughly 4 minutes and produced the statistically stable numbers below.
 
 ```text
 BenchmarkDotNet v0.14.0, Windows 11 (10.0.22621.4317/22H2/2022Update/SunValley2)
