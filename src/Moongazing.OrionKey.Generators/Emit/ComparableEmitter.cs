@@ -27,9 +27,7 @@ internal static class ComparableEmitter
         sb.AppendLine($"readonly partial struct {name} : "
                     + $"global::System.IComparable<{name}>, global::System.IComparable");
         sb.AppendLine("{");
-        sb.AppendLine($"    public int CompareTo({name} other) => "
-                    + "global::System.Collections.Generic.Comparer<"
-                    + $"{model.ValueKeyword}>.Default.Compare(Value, other.Value);");
+        sb.AppendLine($"    public int CompareTo({name} other) => {CompareExpression(model)};");
         sb.AppendLine("    public int CompareTo(object? obj) => obj switch");
         sb.AppendLine("    {");
         sb.AppendLine("        null => 1,");
@@ -44,4 +42,17 @@ internal static class ComparableEmitter
         sb.AppendLine("}");
         return sb.ToString();
     }
+
+    private static string CompareExpression(OrionIdModel model) => model.Strategy switch
+    {
+        StrategyType.GuidV7 =>
+            "global::Moongazing.OrionKey.OrionGuidComparer.CompareV7(Value, other.Value)",
+        StrategyType.SequentialGuid =>
+            "global::Moongazing.OrionKey.OrionGuidComparer.CompareSequential(Value, other.Value)",
+        StrategyType.Ulid or StrategyType.Ksuid or StrategyType.ObjectId =>
+            "global::System.String.CompareOrdinal(Value, other.Value)",
+        StrategyType.Snowflake => "Value.CompareTo(other.Value)",
+        _ => throw new System.InvalidOperationException(
+            "CompareTo requested for a non-sortable model."),
+    };
 }

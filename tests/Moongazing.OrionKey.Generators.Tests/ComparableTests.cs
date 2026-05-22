@@ -39,4 +39,39 @@ public class ComparableTests
         var output = Generate("OrionId<System.Guid>", "OrderId");
         Assert.DoesNotContain("CompareTo", output);
     }
+
+    [Fact]
+    public void Ulid_CompareTo_UsesOrdinalStringComparison()
+    {
+        var output = Generate("OrionId<string, Ulid>", "TenantId");
+        Assert.Contains("global::System.String.CompareOrdinal(Value, other.Value)", output);
+    }
+
+    [Fact]
+    public void GuidV7_CompareTo_UsesByteOrderComparer()
+    {
+        var output = Generate("OrionId<System.Guid, GuidV7>", "AuditId");
+        Assert.Contains("global::Moongazing.OrionKey.OrionGuidComparer.CompareV7(Value, other.Value)", output);
+    }
+
+    [Fact]
+    public void SequentialGuid_CompareTo_UsesSequentialComparer()
+    {
+        var output = Generate("OrionId<System.Guid, SequentialGuid>", "InvoiceId");
+        Assert.Contains("global::Moongazing.OrionKey.OrionGuidComparer.CompareSequential(Value, other.Value)", output);
+    }
+
+    [Fact]
+    public void Emits_IComparable_ForKsuidAndObjectId()
+    {
+        Assert.Contains("CompareTo(EventId other)", Generate("OrionId<string, Ksuid>", "EventId"));
+        Assert.Contains("CompareTo(DocumentId other)", Generate("OrionId<string, ObjectId>", "DocumentId"));
+    }
+
+    [Fact]
+    public void DoesNotEmit_IComparable_ForCuid2()
+    {
+        var output = Generate("OrionId<string, Cuid2>", "AccountId");
+        Assert.DoesNotContain("CompareTo", output);
+    }
 }
