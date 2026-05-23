@@ -155,12 +155,17 @@ become deterministic.
 
 OrionKey ships in phased minor releases on the way to 1.0:
 
-- **`0.2.0` — New ID strategies** *(Done)* — `Cuid2`, `Ksuid`, `ObjectId`, `SequentialGuid`, plus byte-order GUID and ordinal-string `CompareTo` fixes.
-- **`0.3.0` — Integration emitters** *(Done)* — conditional emitters for Dapper, Newtonsoft.Json, MongoDB, and Swashbuckle/OpenAPI, plus per-library aggregate registrars.
-- **`0.4.0` — Native AOT & trimming** *(Planned)* — full `PublishAot`/`PublishTrimmed` compatibility with a verified AOT sample app and CI publish job.
-- **`0.5.0` — Analyzer, code-fix, stabilization** *(Planned)* — new diagnostics (`ORIONKEY006`–`008`), code-fix providers, source-generator performance pass, last 0.x before `1.0`.
+- **`0.2.0` — New ID strategies** *(Done, 2026-05-22)* — `Cuid2`, `Ksuid`, `ObjectId`, `SequentialGuid`, plus byte-order GUID and ordinal-string `CompareTo` fixes.
+- **`0.3.0` — Integration emitters** *(Done, 2026-05-23)* — conditional emitters for Dapper, Newtonsoft.Json, MongoDB, and Swashbuckle/OpenAPI, plus per-library aggregate registrars.
+- **`0.3.1` — Logo refresh** *(Done, 2026-05-23)* — new minimalist family-style key logo in Moongazing indigo; no code changes.
+- **`0.4.0` — Native AOT & trimming** *(Planned, Q3 2026)* — full `PublishAot`/`PublishTrimmed` compatibility with a verified AOT sample app and CI publish job.
+- **`0.5.0` — Analyzer, code-fix, stabilization** *(Planned, Q4 2026)* — new diagnostics (`ORIONKEY006`–`008`), code-fix providers, source-generator performance pass.
+- **`0.6.0` — Composite IDs & extra emitters** *(Planned, Q1 2027)* — multi-value tuple IDs, `IUtf8SpanFormattable`/`IUtf8SpanParsable`, `Tsid`/`Xid` strategies.
+- **`1.0.0` — Stable API** *(Planned, Q2 2027)* — public-type and emitter-contract freeze, LTS window, `net8.0` drop decision.
 
-Full roadmap and per-phase design specs live in [docs/ROADMAP.md](docs/ROADMAP.md).
+Full roadmap with *Considered* and *Out of scope* sections lives in
+[docs/ROADMAP.md](docs/ROADMAP.md). If something on the list matters to you, open an issue
+with the `roadmap` label.
 
 ## More from the Orion family
 
