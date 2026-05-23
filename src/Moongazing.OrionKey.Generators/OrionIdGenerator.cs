@@ -25,17 +25,25 @@ public sealed class OrionIdGenerator : IIncrementalGenerator
             predicate: static (_, _) => true,
             transform: static (ctx, _) => ctx.TargetSymbol as INamedTypeSymbol);
 
-        var efCoreReferenced = context.CompilationProvider.Select(static (compilation, _) =>
-            compilation.GetTypeByMetadataName(
-                "Microsoft.EntityFrameworkCore.Storage.ValueConversion.ValueConverter`2") is not null);
+        var flags = context.CompilationProvider.Select(static (compilation, _) => new IntegrationFlags(
+            HasEfCore: compilation.GetTypeByMetadataName(
+                "Microsoft.EntityFrameworkCore.Storage.ValueConversion.ValueConverter`2") is not null,
+            HasDapper: compilation.GetTypeByMetadataName(
+                "Dapper.SqlMapper+TypeHandler`1") is not null,
+            HasNewtonsoftJson: compilation.GetTypeByMetadataName(
+                "Newtonsoft.Json.JsonConverter") is not null,
+            HasMongo: compilation.GetTypeByMetadataName(
+                "MongoDB.Bson.Serialization.Serializers.SerializerBase`1") is not null,
+            HasSwashbuckle: compilation.GetTypeByMetadataName(
+                "Swashbuckle.AspNetCore.SwaggerGen.ISchemaFilter") is not null));
 
-        context.RegisterSourceOutput(oneArg.Combine(efCoreReferenced),
+        context.RegisterSourceOutput(oneArg.Combine(flags),
             static (spc, pair) => Handle(spc, pair.Left, pair.Right));
-        context.RegisterSourceOutput(twoArg.Combine(efCoreReferenced),
+        context.RegisterSourceOutput(twoArg.Combine(flags),
             static (spc, pair) => Handle(spc, pair.Left, pair.Right));
     }
 
-    private static void Handle(SourceProductionContext spc, INamedTypeSymbol? symbol, bool efCoreReferenced)
+    private static void Handle(SourceProductionContext spc, INamedTypeSymbol? symbol, IntegrationFlags flags)
     {
         if (symbol is null)
         {
@@ -68,7 +76,7 @@ public sealed class OrionIdGenerator : IIncrementalGenerator
         spc.AddSource($"{model.Name}.OrionId.TypeConverter.g.cs", Emit.TypeConverterEmitter.Emit(model));
         spc.AddSource($"{model.Name}.OrionId.Parsable.g.cs", Emit.ParsableEmitter.Emit(model));
 
-        if (efCoreReferenced)
+        if (flags.HasEfCore)
         {
             spc.AddSource($"{model.Name}.OrionId.EfCore.g.cs", Emit.EfCoreConverterEmitter.Emit(model));
         }
