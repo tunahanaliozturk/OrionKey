@@ -4,6 +4,19 @@ All notable changes to OrionKey are documented in this file. The format is based
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.1] - 2026-05-23
+
+### Changed
+
+- New minimalist family-style key logo in Moongazing indigo (`#312E81`), aligned with the
+  sibling OrionGuard, OrionAudit, and OrionLock packages. `docs/icon.png` (NuGet
+  `<PackageIcon>`) and `docs/logo.png` (README) both refreshed; transparent background,
+  256×256, ~11 KB.
+- ROADMAP extended with quarterly milestones through v1.0.0 (Q2 2027), plus *Considered*
+  and *Out of scope* sections matching the family-style public roadmaps.
+
+No source or behaviour changes; this is a metadata/asset release.
+
 ## [0.3.0] - 2026-05-23
 
 ### Added

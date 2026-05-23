@@ -2,10 +2,13 @@
 
 OrionKey is a source-generated strongly-typed ID library for .NET. The roadmap below is the
 public view of where the library is going. Each phase ships as an independent minor release
-with its own spec, plan, tests, and changelog entry; this document is the living index.
+with its own spec, plan, tests, and changelog entry; this document is the living index. It is
+a planning artifact, not a contract — dates slip, priorities reshuffle. If an item here
+matters to you, open a GitHub issue so we can weigh it against everything else.
 
-Status legend: **Done** (shipped) · **Planned** (designed, not yet implemented) · **Idea**
-(post-1.0, not yet designed).
+Status legend: **Done** (shipped) · **Planned** (designed, target window committed) ·
+**Considered** (interesting but unscheduled, needs a concrete use case) · **Out of scope**
+(explicitly declined for the 1.x line).
 
 ---
 
@@ -47,9 +50,18 @@ analyzer/code-fix changes.
 
 ---
 
+## Logo refresh — `0.3.1`
+
+**Status:** Done · **Shipped:** 2026-05-23
+
+New minimalist family-style key logo in Moongazing indigo (`#312E81`), aligned with the
+sibling OrionGuard, OrionAudit, and OrionLock packages. No code changes.
+
+---
+
 ## Phase C — `0.4.0` · Native AOT & trimming
 
-**Status:** Planned · **Spec:**
+**Status:** Planned · **Target:** Q3 2026 · **Spec:**
 [2026-05-23 design](superpowers/specs/2026-05-23-orionkey-0.4.0-aot-trimming-design.md)
 
 Make OrionKey safe and friction-free in `PublishAot` and `PublishTrimmed` deployments.
@@ -70,7 +82,7 @@ public-API surface — purely making existing APIs AOT-clean.
 
 ## Phase D — `0.5.0` · Analyzer, code-fix, and stabilization
 
-**Status:** Planned · **Spec:**
+**Status:** Planned · **Target:** Q4 2026 · **Spec:**
 [2026-05-23 design](superpowers/specs/2026-05-23-orionkey-0.5.0-analyzer-improvements-design.md)
 
 Help users catch misuse before they ship it, and stabilize the public API for 1.0.
@@ -92,17 +104,93 @@ Help users catch misuse before they ship it, and stabilize the public API for 1.
 
 ---
 
-## Beyond 1.0
+## Phase E — `0.6.0` · Composite IDs & extra emitters
 
-Ideas under consideration once the four phases above ship and the API has settled. None of
-these have specs yet; raise an issue if any of them matter to you.
+**Status:** Planned · **Target:** Q1 2027
 
-- Multi-value / composite IDs (e.g. `[OrionId<(Guid, int)>]`).
-- More built-in strategies (e.g. `Tsid`, `Xid`).
-- `IUtf8SpanFormattable` / `IUtf8SpanParsable` emitters for zero-alloc serialization.
-- gRPC / protobuf integration emitter.
-- A small `OrionKey.SourceLink` companion that lets debuggers step into generated code
+The last 0.x release before the API freeze. Pulls the two highest-signal items out of
+*Beyond 1.0* and ships them so they get a real production cycle before 1.0 locks the surface.
+
+- **Multi-value / composite IDs.** `[StronglyTypedId(typeof((Guid TenantId, long LocalId)))]`
+  for domains that genuinely need a compound primary key. Equality, parsing, JSON, and EF Core
+  value conversion all extend cleanly to the tuple shape.
+- **`IUtf8SpanFormattable` / `IUtf8SpanParsable` emitters** for zero-allocation
+  serialization in hot paths.
+- **`Tsid` and `Xid` strategies** added to the existing strategy matrix. Both are widely-used
+  k-sortable formats and slot in next to `Ksuid` / `Cuid2` without architectural changes.
+
+---
+
+## `1.0.0` · Stable API
+
+**Status:** Planned · **Target:** Q2 2027
+
+The 1.0 release is a commitment: public types and emitter contracts freeze inside the 1.x
+line. Anything obsolete by then is removed; everything that remains is stable.
+
+- **API stability.** `[StronglyTypedId]`, `IStronglyTypedId<TValue>`, every emitted
+  member shape, and every integration emitter (EF Core, System.Text.Json, Dapper,
+  Newtonsoft, MongoDB, OpenAPI) freeze. Additions only.
+- **Diagnostic stability.** `ORIONKEY001`–`ORIONKEY008` ids are permanent; any new
+  diagnostics get fresh ids.
+- **Documentation pass.** Every emitted member documented with a runnable example; migration
+  guide from any breaking change introduced in 0.x; strategy-selection cookbook
+  ("`Guid` vs `GuidV7` vs `SequentialGuid` vs `Ulid` vs `Snowflake`").
+- **net8.0 drop decision.** Decide and publish whether 1.x ships TFM `net8.0` or starts at
+  `net9.0`. This is the last chance to cut net8 before SemVer locks it in.
+- **LTS window.** Security and correctness fixes backported to 1.x for 18 months after 2.0
+  ships.
+
+---
+
+## Considered (no commitment)
+
+Ideas under discussion that need a concrete use case before they move to *Planned*. Raise an
+issue if any of them matter to you.
+
+- **gRPC / protobuf integration emitter.** Same conditional-emitter pattern as Dapper /
+  MongoDB; would round out the integration matrix.
+- **`OrionKey.SourceLink` companion** that lets debuggers step into generated ID code
   without copying it into the solution.
+- **Built-in `OrionKey.AspNetCore.OpenApi` package** for the newer
+  `Microsoft.AspNetCore.OpenApi` (net9+) on top of the existing Swashbuckle emitter.
+- **Public `Roslyn` API surface** so consumers can write their own analyzers/codefixes that
+  understand OrionKey ids at compile time.
+
+If any of the above maps to a real workload you are on right now, open an issue with the
+`roadmap` label and a short description — that is how items move from *considered* to
+*planned*.
+
+---
+
+## Out of scope for the 1.x line
+
+- **A runtime ID-generation service.** OrionKey emits the type and its plumbing; the
+  generator strategy runs in-process. Distributed snowflake coordination, ID-allocation
+  reservation services, and similar are deliberately out of scope.
+- **Cross-language ID interop.** OrionKey is a .NET source generator. Sharing ids with a
+  Java/Go service is a serialization concern, not an OrionKey concern.
+- **Database-native ID generation features.** PostgreSQL `gen_random_uuid()`, SQL Server
+  `NEWSEQUENTIALID()`, etc. live in your migration / DDL, not in OrionKey.
+
+---
+
+## Release cadence
+
+| Release | Target             | Theme                                              |
+| ------- | ------------------ | -------------------------------------------------- |
+| v0.2.0  | shipped 2026-05-22 | New ID strategies                                  |
+| v0.3.0  | shipped 2026-05-23 | Integration emitters (Dapper, Newtonsoft, Mongo, OpenAPI) |
+| v0.3.1  | shipped 2026-05-23 | Logo refresh                                       |
+| v0.4.0  | Q3 2026            | Native AOT & trimming                              |
+| v0.5.0  | Q4 2026            | Analyzer, code-fix, stabilization                  |
+| v0.6.0  | Q1 2027            | Composite IDs & extra emitters                     |
+| v1.0.0  | Q2 2027            | API freeze, LTS window                             |
+
+Patch releases ship as needed for bugs and security. Minor releases cluster features around
+the themes above and never break documented public APIs without a deprecation cycle. Dates
+are targets, not commitments. If a milestone slips by more than four weeks, the delay shows
+up here.
 
 ---
 
