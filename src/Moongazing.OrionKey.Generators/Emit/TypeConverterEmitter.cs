@@ -35,6 +35,10 @@ internal static class TypeConverterEmitter
         sb.AppendLine();
         sb.AppendLine($"file sealed class {converter} : global::System.ComponentModel.TypeConverter");
         sb.AppendLine("{");
+        sb.AppendLine($"    [global::System.Diagnostics.CodeAnalysis.DynamicDependency("
+                    + "(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors), "
+                    + $"typeof({converter}))]");
+        sb.AppendLine($"    public {converter}() {{ }}");
         sb.AppendLine("    public override bool CanConvertFrom("
                     + "global::System.ComponentModel.ITypeDescriptorContext? context, "
                     + "global::System.Type sourceType) "

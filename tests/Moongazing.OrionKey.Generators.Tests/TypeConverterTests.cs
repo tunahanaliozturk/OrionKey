@@ -24,4 +24,19 @@ public class TypeConverterTests
         Assert.Contains("CanConvertFrom", output);
         Assert.Contains("ConvertTo", output);
     }
+
+    [Fact]
+    public void Emits_DynamicDependency_OnGeneratedStruct()
+    {
+        var output = Generate("OrionId<System.Guid>", "OrderId");
+        Assert.Contains(
+            "global::System.Diagnostics.CodeAnalysis.DynamicDependency",
+            output);
+        Assert.Contains(
+            "DynamicallyAccessedMemberTypes.PublicConstructors",
+            output);
+        Assert.Contains(
+            "typeof(OrderIdTypeConverter)",
+            output);
+    }
 }
