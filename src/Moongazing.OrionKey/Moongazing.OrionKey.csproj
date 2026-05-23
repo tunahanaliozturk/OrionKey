@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <PackageId>OrionKey</PackageId>
-    <Description>Source-generated strongly-typed IDs for .NET. One attribute emits equality, comparison, New() factory, EF Core ValueConverter, System.Text.Json converter, TypeConverter, and IParsable/ISpanParsable. Strategies: Guid, GuidV7, SequentialGuid, Snowflake, ULID, KSUID, ObjectId, NanoId, CUID2.</Description>
-    <PackageTags>strongly-typed-id;source-generator;ddd;guid;snowflake;ulid;nanoid;ef-core;ksuid;objectid;cuid2</PackageTags>
+    <Description>Source-generated strongly-typed IDs for .NET. One attribute emits equality, comparison, New() factory, EF Core ValueConverter, System.Text.Json converter, TypeConverter, and IParsable/ISpanParsable. Strategies: Guid, GuidV7, SequentialGuid, Snowflake, ULID, KSUID, ObjectId, NanoId, CUID2. Integrations: System.Text.Json, EF Core, TypeConverter, IParsable, Dapper, Newtonsoft.Json, MongoDB, Swashbuckle/OpenAPI.</Description>
+    <PackageTags>strongly-typed-id;source-generator;ddd;guid;snowflake;ulid;nanoid;ef-core;ksuid;objectid;cuid2;dapper;newtonsoft-json;mongodb;swashbuckle;openapi</PackageTags>
     <PackageIcon>icon.png</PackageIcon>
     <PackageReadmeFile>docs/README.md</PackageReadmeFile>
   </PropertyGroup>

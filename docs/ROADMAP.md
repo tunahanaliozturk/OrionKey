@@ -26,7 +26,7 @@ Status legend: **Done** (shipped) · **Planned** (designed, not yet implemented)
 
 ## Phase B — `0.3.0` · Integration emitters
 
-**Status:** Planned · **Spec:**
+**Status:** Done · **Shipped:** 2026-05-23 · [Changelog](../CHANGELOG.md#030---2026-05-23) · **Spec:**
 [2026-05-23 design](superpowers/specs/2026-05-23-orionkey-0.3.0-integration-emitters-design.md)
 
 OrionKey 0.2 already covers `System.Text.Json`, EF Core, ASP.NET Core model binding, and the

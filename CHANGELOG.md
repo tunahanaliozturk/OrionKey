@@ -4,6 +4,20 @@ All notable changes to OrionKey are documented in this file. The format is based
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-05-23
+
+### Added
+
+- Conditional Dapper `SqlMapper.TypeHandler<TId>` emitter — generated whenever the consumer references `Dapper`.
+- Conditional Newtonsoft.Json `JsonConverter<TId>` emitter — generated whenever the consumer references `Newtonsoft.Json`.
+- Conditional MongoDB `SerializerBase<TId>` emitter (delegates to `BsonSerializer.LookupSerializer<T>()` so user-set Guid representations and driver versions are respected).
+- Conditional Swashbuckle `ISchemaFilter` emitter that maps OrionKey ids to their underlying primitive in generated OpenAPI documents.
+- Aggregate registrars `OrionKeyDapperRegistrar.Register()`, `OrionKeyNewtonsoftJsonRegistrar.AddTo(...)`, `OrionKeyMongoRegistrar.Register()`, and `OrionKeyOpenApiRegistrar.AddTo(...)` — one call per library wires up every `[OrionId]` struct in the assembly.
+
+### Changed
+
+- Generator internals refactored so all five integration-presence flags live in a single `IntegrationFlags` record passed through the source-output pipeline.
+
 ## [0.2.0] - 2026-05-22
 
 ### Added
