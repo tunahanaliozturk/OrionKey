@@ -5,6 +5,7 @@
     <PackageTags>strongly-typed-id;source-generator;ddd;guid;snowflake;ulid;nanoid;ef-core;ksuid;objectid;cuid2;dapper;newtonsoft-json;mongodb;swashbuckle;openapi</PackageTags>
     <PackageIcon>icon.png</PackageIcon>
     <PackageReadmeFile>docs/README.md</PackageReadmeFile>
+    <IsAotCompatible>true</IsAotCompatible>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Moongazing.OrionKey.Generators\Moongazing.OrionKey.Generators.csproj"

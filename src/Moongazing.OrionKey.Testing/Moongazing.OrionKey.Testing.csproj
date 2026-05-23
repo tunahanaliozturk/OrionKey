@@ -5,6 +5,7 @@
     <PackageTags>strongly-typed-id;testing;orionkey</PackageTags>
     <PackageIcon>icon.png</PackageIcon>
     <PackageReadmeFile>docs/README.md</PackageReadmeFile>
+    <IsAotCompatible>true</IsAotCompatible>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Moongazing.OrionKey\Moongazing.OrionKey.csproj" />
