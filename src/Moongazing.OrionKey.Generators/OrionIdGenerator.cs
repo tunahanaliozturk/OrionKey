@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
+using Moongazing.OrionKey.Generators.Model;
 using Moongazing.OrionKey.Generators.Parsing;
 
 namespace Moongazing.OrionKey.Generators;
@@ -41,6 +43,27 @@ public sealed class OrionIdGenerator : IIncrementalGenerator
             static (spc, pair) => Handle(spc, pair.Left, pair.Right));
         context.RegisterSourceOutput(twoArg.Combine(flags),
             static (spc, pair) => Handle(spc, pair.Left, pair.Right));
+
+        var allSymbols = oneArg.Collect()
+            .Combine(twoArg.Collect())
+            .Select(static (pair, _) => pair.Left.AddRange(pair.Right));
+
+        var allModels = allSymbols.Select(static (symbols, ct) =>
+        {
+            var list = new List<OrionIdModel>();
+            foreach (var symbol in symbols)
+            {
+                if (symbol is null) continue;
+                if (OrionIdParser.TryParse(symbol, out var model, out var ignoredDiags) && model is not null)
+                {
+                    list.Add(model);
+                }
+            }
+            return (IReadOnlyList<OrionIdModel>)list;
+        });
+
+        context.RegisterSourceOutput(allModels.Combine(flags),
+            static (spc, pair) => EmitRegistrars(spc, pair.Left, pair.Right));
     }
 
     private static void Handle(SourceProductionContext spc, INamedTypeSymbol? symbol, IntegrationFlags flags)
@@ -102,6 +125,35 @@ public sealed class OrionIdGenerator : IIncrementalGenerator
         {
             spc.AddSource($"{model.Name}.OrionId.OpenApi.g.cs",
                 Emit.OpenApiSchemaFilterEmitter.Emit(model));
+        }
+    }
+
+    private static void EmitRegistrars(
+        SourceProductionContext spc,
+        IReadOnlyList<OrionIdModel> models,
+        IntegrationFlags flags)
+    {
+        if (models.Count == 0)
+        {
+            return;
+        }
+
+        if (flags.HasDapper)
+        {
+            spc.AddSource("OrionKeyDapperRegistrar.g.cs", Emit.RegistrationEmitter.EmitDapper(models));
+        }
+        if (flags.HasNewtonsoftJson)
+        {
+            spc.AddSource("OrionKeyNewtonsoftJsonRegistrar.g.cs",
+                Emit.RegistrationEmitter.EmitNewtonsoftJson(models));
+        }
+        if (flags.HasMongo)
+        {
+            spc.AddSource("OrionKeyMongoRegistrar.g.cs", Emit.RegistrationEmitter.EmitMongo(models));
+        }
+        if (flags.HasSwashbuckle)
+        {
+            spc.AddSource("OrionKeyOpenApiRegistrar.g.cs", Emit.RegistrationEmitter.EmitOpenApi(models));
         }
     }
 }
