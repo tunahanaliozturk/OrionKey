@@ -32,6 +32,10 @@ internal static class GeneratorHarness
         // sees Dapper.SqlMapper as a referenced assembly.
         _ = typeof(global::Dapper.SqlMapper).Assembly;
 
+        // Force the Newtonsoft.Json assembly to load so the conditional converter emitter
+        // sees Newtonsoft.Json as a referenced assembly.
+        _ = typeof(global::Newtonsoft.Json.JsonConverter).Assembly;
+
         IEnumerable<System.Reflection.Assembly> assemblies = System.AppDomain.CurrentDomain.GetAssemblies()
             .Where(a => !a.IsDynamic && !string.IsNullOrEmpty(a.Location));
 

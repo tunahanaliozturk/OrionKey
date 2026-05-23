@@ -85,5 +85,11 @@ public sealed class OrionIdGenerator : IIncrementalGenerator
         {
             spc.AddSource($"{model.Name}.OrionId.Dapper.g.cs", Emit.DapperTypeHandlerEmitter.Emit(model));
         }
+
+        if (flags.HasNewtonsoftJson)
+        {
+            spc.AddSource($"{model.Name}.OrionId.NewtonsoftJson.g.cs",
+                Emit.NewtonsoftJsonConverterEmitter.Emit(model));
+        }
     }
 }
