@@ -136,6 +136,17 @@ sequential generators hand out ascending, repeatable ids so assertions do not de
 random or time-based values. Wrap the code under test in a scope and the ids it mints
 become deterministic.
 
+## Roadmap
+
+OrionKey ships in phased minor releases on the way to 1.0:
+
+- **`0.2.0` — New ID strategies** *(Done)* — `Cuid2`, `Ksuid`, `ObjectId`, `SequentialGuid`, plus byte-order GUID and ordinal-string `CompareTo` fixes.
+- **`0.3.0` — Integration emitters** *(Planned)* — conditional emitters for Dapper, Newtonsoft.Json, MongoDB, and Swashbuckle/OpenAPI.
+- **`0.4.0` — Native AOT & trimming** *(Planned)* — full `PublishAot`/`PublishTrimmed` compatibility with a verified AOT sample app and CI publish job.
+- **`0.5.0` — Analyzer, code-fix, stabilization** *(Planned)* — new diagnostics (`ORIONKEY006`–`008`), code-fix providers, source-generator performance pass, last 0.x before `1.0`.
+
+Full roadmap and per-phase design specs live in [docs/ROADMAP.md](docs/ROADMAP.md).
+
 ## More from the Orion family
 
 OrionKey is one of a set of standalone .NET libraries:
