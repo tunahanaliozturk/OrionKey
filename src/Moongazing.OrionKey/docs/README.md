@@ -59,4 +59,15 @@ For every annotated struct the generator emits, as `partial` companions:
 The generated converters are discovered automatically by `System.Text.Json`, EF Core, and
 ASP.NET Core model binding. No manual registration is required.
 
+## Library integration
+
+When the consumer project references Dapper, Newtonsoft.Json, MongoDB.Driver, or Swashbuckle.AspNetCore, OrionKey emits matching companions for every `[OrionId]` struct:
+
+| Library | Generated companion | One-line registration |
+| --- | --- | --- |
+| Dapper | `<Id>DapperTypeHandler` | `OrionKeyDapperRegistrar.Register();` |
+| Newtonsoft.Json | `<Id>NewtonsoftJsonConverter` | `OrionKeyNewtonsoftJsonRegistrar.AddTo(settings);` |
+| MongoDB driver | `<Id>BsonSerializer` | `OrionKeyMongoRegistrar.Register();` |
+| Swashbuckle (OpenAPI) | `<Id>SchemaFilter` | `OrionKeyOpenApiRegistrar.AddTo(options);` |
+
 OrionKey is released under the MIT License.

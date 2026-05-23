@@ -89,6 +89,21 @@ For every annotated struct the generator emits, as `partial` companions:
 - An EF Core `ValueConverter`, emitted only when the project references EF Core, so the id
   can be used directly as an entity key or property.
 
+## Library integration
+
+OrionKey emits additional companions automatically when the consumer project references any of these libraries. There is no extra configuration — the source generator probes the compilation and only emits what the project can use.
+
+| Library | Generated companion | One-line registration |
+| --- | --- | --- |
+| Dapper | `<Id>DapperTypeHandler` | `OrionKeyDapperRegistrar.Register();` |
+| Newtonsoft.Json | `<Id>NewtonsoftJsonConverter` | `OrionKeyNewtonsoftJsonRegistrar.AddTo(settings);` |
+| MongoDB driver | `<Id>BsonSerializer` | `OrionKeyMongoRegistrar.Register();` |
+| Swashbuckle (OpenAPI) | `<Id>SchemaFilter` | `OrionKeyOpenApiRegistrar.AddTo(options);` |
+
+Each registrar enumerates every `[OrionId]` struct in the assembly and wires it into the library's registry, so a single call covers every id you have declared.
+
+`System.Text.Json`, EF Core, and ASP.NET Core model binding still auto-discover their generated companions via attributes / conventions — no registrar call is required for those.
+
 ## Snowflake worker IDs
 
 Snowflake ids embed a per-process **worker ID** (10 bits, 0-1023) to stay unique across
@@ -141,7 +156,7 @@ become deterministic.
 OrionKey ships in phased minor releases on the way to 1.0:
 
 - **`0.2.0` — New ID strategies** *(Done)* — `Cuid2`, `Ksuid`, `ObjectId`, `SequentialGuid`, plus byte-order GUID and ordinal-string `CompareTo` fixes.
-- **`0.3.0` — Integration emitters** *(Planned)* — conditional emitters for Dapper, Newtonsoft.Json, MongoDB, and Swashbuckle/OpenAPI.
+- **`0.3.0` — Integration emitters** *(Done)* — conditional emitters for Dapper, Newtonsoft.Json, MongoDB, and Swashbuckle/OpenAPI, plus per-library aggregate registrars.
 - **`0.4.0` — Native AOT & trimming** *(Planned)* — full `PublishAot`/`PublishTrimmed` compatibility with a verified AOT sample app and CI publish job.
 - **`0.5.0` — Analyzer, code-fix, stabilization** *(Planned)* — new diagnostics (`ORIONKEY006`–`008`), code-fix providers, source-generator performance pass, last 0.x before `1.0`.
 
