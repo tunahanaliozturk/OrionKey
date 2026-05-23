@@ -56,7 +56,10 @@ public class RegistrationEmitterTests
             """);
         Assert.Contains("class OrionKeyOpenApiRegistrar", output);
         Assert.Contains("AddTo(global::Swashbuckle.AspNetCore.SwaggerGen.SwaggerGenOptions options)", output);
-        Assert.Contains("options.SchemaFilter<global::Demo.UserIdSchemaFilter>()", output);
+        Assert.Contains(
+            "global::Microsoft.Extensions.DependencyInjection.SwaggerGenOptionsExtensions"
+            + ".SchemaFilter<global::Demo.UserIdSchemaFilter>(options)",
+            output);
     }
 
     [Fact]

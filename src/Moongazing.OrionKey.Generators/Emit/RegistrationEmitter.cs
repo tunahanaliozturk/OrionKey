@@ -41,7 +41,7 @@ internal static class RegistrationEmitter
             summary: "Adds every generated Swashbuckle schema filter to the supplied options.",
             signature: "AddTo(global::Swashbuckle.AspNetCore.SwaggerGen.SwaggerGenOptions options)",
             body: BuildStatements(models, m =>
-                $"options.SchemaFilter<{Qualify(m)}SchemaFilter>();"));
+                $"global::Microsoft.Extensions.DependencyInjection.SwaggerGenOptionsExtensions.SchemaFilter<{Qualify(m)}SchemaFilter>(options);"));
 
     private static string Qualify(OrionIdModel model)
         => model.Namespace.Length == 0
