@@ -80,5 +80,10 @@ public sealed class OrionIdGenerator : IIncrementalGenerator
         {
             spc.AddSource($"{model.Name}.OrionId.EfCore.g.cs", Emit.EfCoreConverterEmitter.Emit(model));
         }
+
+        if (flags.HasDapper)
+        {
+            spc.AddSource($"{model.Name}.OrionId.Dapper.g.cs", Emit.DapperTypeHandlerEmitter.Emit(model));
+        }
     }
 }

@@ -28,6 +28,10 @@ internal static class GeneratorHarness
         // sees Microsoft.EntityFrameworkCore as a referenced assembly.
         _ = typeof(global::Microsoft.EntityFrameworkCore.Storage.ValueConversion.ValueConverter<,>).Assembly;
 
+        // Force the Dapper assembly to load so the conditional TypeHandler emitter
+        // sees Dapper.SqlMapper as a referenced assembly.
+        _ = typeof(global::Dapper.SqlMapper).Assembly;
+
         IEnumerable<System.Reflection.Assembly> assemblies = System.AppDomain.CurrentDomain.GetAssemblies()
             .Where(a => !a.IsDynamic && !string.IsNullOrEmpty(a.Location));
 
