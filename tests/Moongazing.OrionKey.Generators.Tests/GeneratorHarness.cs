@@ -36,6 +36,10 @@ internal static class GeneratorHarness
         // sees Newtonsoft.Json as a referenced assembly.
         _ = typeof(global::Newtonsoft.Json.JsonConverter).Assembly;
 
+        // Force the MongoDB.Bson assembly to load so the conditional BSON serializer emitter
+        // sees MongoDB.Driver as a referenced assembly.
+        _ = typeof(global::MongoDB.Bson.Serialization.Serializers.SerializerBase<>).Assembly;
+
         IEnumerable<System.Reflection.Assembly> assemblies = System.AppDomain.CurrentDomain.GetAssemblies()
             .Where(a => !a.IsDynamic && !string.IsNullOrEmpty(a.Location));
 

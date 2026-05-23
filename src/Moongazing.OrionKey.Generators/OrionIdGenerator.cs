@@ -91,5 +91,11 @@ public sealed class OrionIdGenerator : IIncrementalGenerator
             spc.AddSource($"{model.Name}.OrionId.NewtonsoftJson.g.cs",
                 Emit.NewtonsoftJsonConverterEmitter.Emit(model));
         }
+
+        if (flags.HasMongo)
+        {
+            spc.AddSource($"{model.Name}.OrionId.Mongo.g.cs",
+                Emit.MongoBsonSerializerEmitter.Emit(model));
+        }
     }
 }
