@@ -40,6 +40,10 @@ internal static class GeneratorHarness
         // sees MongoDB.Driver as a referenced assembly.
         _ = typeof(global::MongoDB.Bson.Serialization.Serializers.SerializerBase<>).Assembly;
 
+        // Force the Swashbuckle.AspNetCore.SwaggerGen assembly to load so the conditional
+        // schema-filter emitter sees Swashbuckle as a referenced assembly.
+        _ = typeof(global::Swashbuckle.AspNetCore.SwaggerGen.ISchemaFilter).Assembly;
+
         IEnumerable<System.Reflection.Assembly> assemblies = System.AppDomain.CurrentDomain.GetAssemblies()
             .Where(a => !a.IsDynamic && !string.IsNullOrEmpty(a.Location));
 

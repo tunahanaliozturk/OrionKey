@@ -97,5 +97,11 @@ public sealed class OrionIdGenerator : IIncrementalGenerator
             spc.AddSource($"{model.Name}.OrionId.Mongo.g.cs",
                 Emit.MongoBsonSerializerEmitter.Emit(model));
         }
+
+        if (flags.HasSwashbuckle)
+        {
+            spc.AddSource($"{model.Name}.OrionId.OpenApi.g.cs",
+                Emit.OpenApiSchemaFilterEmitter.Emit(model));
+        }
     }
 }
