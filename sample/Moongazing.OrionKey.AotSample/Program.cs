@@ -5,17 +5,29 @@ using Moongazing.OrionKey.AotSample;
 
 OrionKey.Configure(o => o.SnowflakeWorkerId = 1);
 
+var options = new JsonSerializerOptions { WriteIndented = false };
+options.Converters.Add(new OrderIdJsonConverter());
+options.Converters.Add(new AuditIdJsonConverter());
+options.Converters.Add(new InvoiceIdJsonConverter());
+options.Converters.Add(new UserIdJsonConverter());
+options.Converters.Add(new TenantIdJsonConverter());
+options.Converters.Add(new SessionIdJsonConverter());
+options.Converters.Add(new AccountIdJsonConverter());
+options.Converters.Add(new EventIdJsonConverter());
+options.Converters.Add(new DocumentIdJsonConverter());
+var ctx = new SampleJsonContext(options);
+
 var failures = 0;
 
-failures += RoundTripJson(OrderId.New(), SampleJsonContext.Default.OrderId);
-failures += RoundTripJson(AuditId.New(), SampleJsonContext.Default.AuditId);
-failures += RoundTripJson(InvoiceId.New(), SampleJsonContext.Default.InvoiceId);
-failures += RoundTripJson(UserId.New(), SampleJsonContext.Default.UserId);
-failures += RoundTripJson(TenantId.New(), SampleJsonContext.Default.TenantId);
-failures += RoundTripJson(SessionId.New(), SampleJsonContext.Default.SessionId);
-failures += RoundTripJson(AccountId.New(), SampleJsonContext.Default.AccountId);
-failures += RoundTripJson(EventId.New(), SampleJsonContext.Default.EventId);
-failures += RoundTripJson(DocumentId.New(), SampleJsonContext.Default.DocumentId);
+failures += RoundTripJson(OrderId.New(), ctx.OrderId);
+failures += RoundTripJson(AuditId.New(), ctx.AuditId);
+failures += RoundTripJson(InvoiceId.New(), ctx.InvoiceId);
+failures += RoundTripJson(UserId.New(), ctx.UserId);
+failures += RoundTripJson(TenantId.New(), ctx.TenantId);
+failures += RoundTripJson(SessionId.New(), ctx.SessionId);
+failures += RoundTripJson(AccountId.New(), ctx.AccountId);
+failures += RoundTripJson(EventId.New(), ctx.EventId);
+failures += RoundTripJson(DocumentId.New(), ctx.DocumentId);
 
 failures += RoundTripParse(OrderId.New());
 failures += RoundTripParse(UserId.New());
