@@ -104,6 +104,17 @@ Each registrar enumerates every `[OrionId]` struct in the assembly and wires it 
 
 `System.Text.Json`, EF Core, and ASP.NET Core model binding still auto-discover their generated companions via attributes / conventions — no registrar call is required for those.
 
+## AOT & trimming
+
+OrionKey is compatible with Native AOT (`<PublishAot>true</PublishAot>`) and trimming (`<PublishTrimmed>true</PublishTrimmed>`). Both runtime assemblies (`OrionKey`, `OrionKey.Testing`) carry `<IsAotCompatible>true</IsAotCompatible>`, every generated converter is reachable via attributes (no runtime reflection scan), and CI publishes a self-contained AOT sample binary on `linux-x64` and `win-x64` every push to prove the toolchain stays clean.
+
+Three Phase B integration libraries — Newtonsoft.Json, MongoDB.Driver, and Swashbuckle.AspNetCore — are not AOT-clean as of mid-2026. Their OrionKey emitters continue to work in non-AOT projects; if your project publishes AOT, prefer `System.Text.Json`, EF Core, Dapper, and the BCL `TypeConverter` / `IParsable` pipelines. See [sample/Moongazing.OrionKey.AotSample](sample/Moongazing.OrionKey.AotSample) for a working end-to-end example.
+
+Two AOT-specific patterns the sample demonstrates:
+
+- **`System.Text.Json` with a source-generated context.** Source generators don't see each other's emitted attributes, so the `[JsonConverter]` attribute OrionKey emits is invisible to the `System.Text.Json` source generator. Register the generated converters into a `JsonSerializerOptions.Converters` collection at startup, then construct your `JsonSerializerContext` with those options (`new MyContext(options)`) and serialize via the context's per-type properties.
+- **Dapper.** Anonymous-object parameter binding (`new { id }`) uses `Reflection.Emit.DynamicMethod` and throws `PlatformNotSupportedException` under AOT. Use `Dapper.DynamicParameters` instead — `var p = new DynamicParameters(); p.Add("id", id); connection.Execute(sql, p);`.
+
 ## Snowflake worker IDs
 
 Snowflake ids embed a per-process **worker ID** (10 bits, 0-1023) to stay unique across
@@ -158,7 +169,7 @@ OrionKey ships in phased minor releases on the way to 1.0:
 - **`0.2.0` — New ID strategies** *(Done, 2026-05-22)* — `Cuid2`, `Ksuid`, `ObjectId`, `SequentialGuid`, plus byte-order GUID and ordinal-string `CompareTo` fixes.
 - **`0.3.0` — Integration emitters** *(Done, 2026-05-23)* — conditional emitters for Dapper, Newtonsoft.Json, MongoDB, and Swashbuckle/OpenAPI, plus per-library aggregate registrars.
 - **`0.3.1` — Logo refresh** *(Done, 2026-05-23)* — new minimalist family-style key logo in Moongazing indigo; no code changes.
-- **`0.4.0` — Native AOT & trimming** *(Planned, Q3 2026)* — full `PublishAot`/`PublishTrimmed` compatibility with a verified AOT sample app and CI publish job.
+- **`0.4.0` — Native AOT & trimming** *(Done)* — full `PublishAot`/`PublishTrimmed` compatibility with a verified AOT sample app and CI publish job.
 - **`0.5.0` — Analyzer, code-fix, stabilization** *(Planned, Q4 2026)* — new diagnostics (`ORIONKEY006`–`008`), code-fix providers, source-generator performance pass.
 - **`0.6.0` — Composite IDs & extra emitters** *(Planned, Q1 2027)* — multi-value tuple IDs, `IUtf8SpanFormattable`/`IUtf8SpanParsable`, `Tsid`/`Xid` strategies.
 - **`1.0.0` — Stable API** *(Planned, Q2 2027)* — public-type and emitter-contract freeze, LTS window, `net8.0` drop decision.

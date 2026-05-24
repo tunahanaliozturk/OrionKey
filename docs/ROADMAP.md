@@ -61,7 +61,7 @@ sibling OrionGuard, OrionAudit, and OrionLock packages. No code changes.
 
 ## Phase C — `0.4.0` · Native AOT & trimming
 
-**Status:** Planned · **Target:** Q3 2026 · **Spec:**
+**Status:** Done · **Shipped:** 2026-05-24 · [Changelog](../CHANGELOG.md#040---2026-05-24) · **Spec:**
 [2026-05-23 design](superpowers/specs/2026-05-23-orionkey-0.4.0-aot-trimming-design.md)
 
 Make OrionKey safe and friction-free in `PublishAot` and `PublishTrimmed` deployments.
@@ -182,7 +182,7 @@ If any of the above maps to a real workload you are on right now, open an issue 
 | v0.2.0  | shipped 2026-05-22 | New ID strategies                                  |
 | v0.3.0  | shipped 2026-05-23 | Integration emitters (Dapper, Newtonsoft, Mongo, OpenAPI) |
 | v0.3.1  | shipped 2026-05-23 | Logo refresh                                       |
-| v0.4.0  | Q3 2026            | Native AOT & trimming                              |
+| v0.4.0  | shipped 2026-05-24 | Native AOT & trimming                              |
 | v0.5.0  | Q4 2026            | Analyzer, code-fix, stabilization                  |
 | v0.6.0  | Q1 2027            | Composite IDs & extra emitters                     |
 | v1.0.0  | Q2 2027            | API freeze, LTS window                             |
