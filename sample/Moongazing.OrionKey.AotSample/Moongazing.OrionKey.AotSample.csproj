@@ -14,4 +14,8 @@
     <ProjectReference Include="..\..\src\Moongazing.OrionKey.Generators\Moongazing.OrionKey.Generators.csproj"
                       OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Dapper" Version="2.1.35" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.0" />
+  </ItemGroup>
 </Project>
