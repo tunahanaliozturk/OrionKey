@@ -10,7 +10,7 @@ All notable changes to OrionKey are documented in this file. The format is based
 
 - `<IsAotCompatible>true</IsAotCompatible>` on the `Moongazing.OrionKey` and `Moongazing.OrionKey.Testing` runtime projects — both are now verified clean under the .NET trim/AOT analyzers.
 - Defensive `[DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(<Id>TypeConverter))]` on the generated `<Id>TypeConverter`'s constructor, so the converter's public constructors survive aggressive trimming even on runtimes without the intrinsic `TypeConverterAttribute(Type)` annotation.
-- New `sample/Moongazing.OrionKey.AotSample` console app — publishes with `<PublishAot>true</PublishAot>`, round-trips every ID strategy through `System.Text.Json` (with the generated converters registered into `JsonSerializerOptions.Converters` and consumed via a source-generated `JsonSerializerContext`), `IParsable<T>.Parse` (via the C# 11 static-abstract-interface-member call `T.Parse(text, null)`), and Dapper + in-memory SQLite (using `DynamicParameters`). The published native binary exits 0 on success.
+- New `sample/Moongazing.OrionKey.AotSample` console app — publishes with `<PublishAot>true</PublishAot>`, round-trips every ID strategy through `System.Text.Json` (with the generated converters registered into `JsonSerializerOptions.Converters` and consumed via a source-generated `JsonSerializerContext`) and `IParsable<T>.Parse` (via the C# 11 static-abstract-interface-member call `T.Parse(text, null)`). The published native binary exits 0 on success.
 - New CI job `aot-publish` publishes the AOT sample on `ubuntu-latest`/`linux-x64` and `windows-latest`/`win-x64` and runs the produced binary on every push and PR. The NuGet `publish` job now gates on it, so a broken AOT story blocks the release.
 
 ### Changed
@@ -25,7 +25,7 @@ All notable changes to OrionKey are documented in this file. The format is based
 
 - Newtonsoft.Json, MongoDB.Driver, and Swashbuckle.AspNetCore are not AOT-clean as of mid-2026. Their Phase B emitters continue to ship and work in non-AOT scenarios; the AOT sample deliberately does not exercise them.
 - For AOT projects using OrionKey with `System.Text.Json`: register the generated `<Id>JsonConverter` instances into a `JsonSerializerOptions.Converters` collection and pass that options object to a `JsonSerializerContext` constructor (`new MyJsonContext(options)`), then serialize via `ctx.<TypeName>`. Source generators don't see each other's emitted attributes, so the converter cannot be discovered automatically by the `[JsonSerializable]` attribute alone.
-- For AOT projects using OrionKey with Dapper: use `Dapper.DynamicParameters` for parameter binding rather than anonymous objects. Anonymous-object parameter binding uses `Reflection.Emit.DynamicMethod` and throws `PlatformNotSupportedException` under AOT.
+- For AOT projects using OrionKey with Dapper: the OrionKey-generated `<Id>DapperTypeHandler` is AOT-compatible, but the Dapper assembly itself (2.1.35) produces aggregate `IL2104`/`IL3053` warnings during AOT publish — the Dapper team has not yet annotated it as trim-safe. Suppress per-assembly or wait for an upstream Dapper release with annotations. The AOT sample in this repo deliberately omits Dapper for that reason.
 
 ## [0.3.1] - 2026-05-23
 

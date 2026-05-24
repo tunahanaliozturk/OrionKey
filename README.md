@@ -108,12 +108,14 @@ Each registrar enumerates every `[OrionId]` struct in the assembly and wires it 
 
 OrionKey is compatible with Native AOT (`<PublishAot>true</PublishAot>`) and trimming (`<PublishTrimmed>true</PublishTrimmed>`). Both runtime assemblies (`OrionKey`, `OrionKey.Testing`) carry `<IsAotCompatible>true</IsAotCompatible>`, every generated converter is reachable via attributes (no runtime reflection scan), and CI publishes a self-contained AOT sample binary on `linux-x64` and `win-x64` every push to prove the toolchain stays clean.
 
-Three Phase B integration libraries — Newtonsoft.Json, MongoDB.Driver, and Swashbuckle.AspNetCore — are not AOT-clean as of mid-2026. Their OrionKey emitters continue to work in non-AOT projects; if your project publishes AOT, prefer `System.Text.Json`, EF Core, Dapper, and the BCL `TypeConverter` / `IParsable` pipelines. See [sample/Moongazing.OrionKey.AotSample](sample/Moongazing.OrionKey.AotSample) for a working end-to-end example.
+Three Phase B integration libraries — Newtonsoft.Json, MongoDB.Driver, and Swashbuckle.AspNetCore — are not AOT-clean as of mid-2026. Their OrionKey emitters continue to work in non-AOT projects; if your project publishes AOT, prefer `System.Text.Json`, EF Core, and the BCL `TypeConverter` / `IParsable` pipelines. See [sample/Moongazing.OrionKey.AotSample](sample/Moongazing.OrionKey.AotSample) for a working end-to-end example.
 
 Two AOT-specific patterns the sample demonstrates:
 
 - **`System.Text.Json` with a source-generated context.** Source generators don't see each other's emitted attributes, so the `[JsonConverter]` attribute OrionKey emits is invisible to the `System.Text.Json` source generator. Register the generated converters into a `JsonSerializerOptions.Converters` collection at startup, then construct your `JsonSerializerContext` with those options (`new MyContext(options)`) and serialize via the context's per-type properties.
-- **Dapper.** Anonymous-object parameter binding (`new { id }`) uses `Reflection.Emit.DynamicMethod` and throws `PlatformNotSupportedException` under AOT. Use `Dapper.DynamicParameters` instead — `var p = new DynamicParameters(); p.Add("id", id); connection.Execute(sql, p);`.
+- **`IParsable<T>`.** OrionKey emits `Parse(string, IFormatProvider?)` as an explicit interface implementation. Call it through a generic constraint `where T : IParsable<T>` and invoke `T.Parse(text, null)` — the C# 11 static-abstract-interface-member syntax — rather than `MyId.Parse(...)` (which is not a public static method on the struct).
+
+**Dapper note:** The OrionKey-generated `<Id>DapperTypeHandler` is AOT-compatible, but the Dapper assembly itself (2.1.35) produces aggregate `IL2104`/`IL3053` warnings during AOT publish because the Dapper team has not yet annotated it as trim-safe. AOT consumers can either suppress these per-assembly warnings (at their own risk) or wait for an upstream Dapper release that ships trim/AOT annotations. The AOT sample in this repo deliberately omits Dapper for that reason.
 
 ## Snowflake worker IDs
 
