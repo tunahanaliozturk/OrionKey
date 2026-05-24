@@ -38,8 +38,45 @@ jobs:
       - name: Test
         run: dotnet test ${{ env.SOLUTION_PATH }} --no-restore --configuration Release --verbosity normal
 
-  publish:
+  aot-publish:
     needs: build-and-test
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            rid: linux-x64
+            binary: Moongazing.OrionKey.AotSample
+          - os: windows-latest
+            rid: win-x64
+            binary: Moongazing.OrionKey.AotSample.exe
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: dotnet restore ${{ env.SOLUTION_PATH }}
+
+      - name: Publish AOT sample
+        run: dotnet publish sample/Moongazing.OrionKey.AotSample/Moongazing.OrionKey.AotSample.csproj -c Release -r ${{ matrix.rid }} --self-contained --no-restore
+
+      - name: Run AOT sample (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: ./sample/Moongazing.OrionKey.AotSample/bin/Release/net10.0/${{ matrix.rid }}/publish/${{ matrix.binary }}
+
+      - name: Run AOT sample (Windows)
+        if: matrix.os == 'windows-latest'
+        run: .\sample\Moongazing.OrionKey.AotSample\bin\Release\net10.0\${{ matrix.rid }}\publish\${{ matrix.binary }}
+
+  publish:
+    needs: [build-and-test, aot-publish]
     runs-on: ubuntu-latest
     if: github.event_name == 'release'
     permissions:

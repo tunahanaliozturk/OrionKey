@@ -29,6 +29,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "sample", "sample", "{4F9DEA
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Moongazing.OrionKey.Sample", "sample\Moongazing.OrionKey.Sample\Moongazing.OrionKey.Sample.csproj", "{E7299699-594D-4C71-8ED3-615B0E29F8B2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Moongazing.OrionKey.AotSample", "sample\Moongazing.OrionKey.AotSample\Moongazing.OrionKey.AotSample.csproj", "{51ECC507-E496-467C-AB6E-84D6E43D39D1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -147,6 +149,18 @@ Global
 		{E7299699-594D-4C71-8ED3-615B0E29F8B2}.Release|x64.Build.0 = Release|Any CPU
 		{E7299699-594D-4C71-8ED3-615B0E29F8B2}.Release|x86.ActiveCfg = Release|Any CPU
 		{E7299699-594D-4C71-8ED3-615B0E29F8B2}.Release|x86.Build.0 = Release|Any CPU
+		{51ECC507-E496-467C-AB6E-84D6E43D39D1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{51ECC507-E496-467C-AB6E-84D6E43D39D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{51ECC507-E496-467C-AB6E-84D6E43D39D1}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{51ECC507-E496-467C-AB6E-84D6E43D39D1}.Debug|x64.Build.0 = Debug|Any CPU
+		{51ECC507-E496-467C-AB6E-84D6E43D39D1}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{51ECC507-E496-467C-AB6E-84D6E43D39D1}.Debug|x86.Build.0 = Debug|Any CPU
+		{51ECC507-E496-467C-AB6E-84D6E43D39D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{51ECC507-E496-467C-AB6E-84D6E43D39D1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{51ECC507-E496-467C-AB6E-84D6E43D39D1}.Release|x64.ActiveCfg = Release|Any CPU
+		{51ECC507-E496-467C-AB6E-84D6E43D39D1}.Release|x64.Build.0 = Release|Any CPU
+		{51ECC507-E496-467C-AB6E-84D6E43D39D1}.Release|x86.ActiveCfg = Release|Any CPU
+		{51ECC507-E496-467C-AB6E-84D6E43D39D1}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -161,5 +175,6 @@ Global
 		{A09ECF27-3BD8-4981-91E3-EEA8FF8D6294} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 		{DB9A492A-841F-46F0-B8D8-A8BFC6A359A5} = {760AB15A-8938-8D9B-BEDE-5CE1484B84C3}
 		{E7299699-594D-4C71-8ED3-615B0E29F8B2} = {4F9DEAE5-078F-E77A-2E4A-FEB6FFE226FF}
+		{51ECC507-E496-467C-AB6E-84D6E43D39D1} = {4F9DEAE5-078F-E77A-2E4A-FEB6FFE226FF}
 	EndGlobalSection
 EndGlobal

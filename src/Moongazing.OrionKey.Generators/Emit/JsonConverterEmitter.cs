@@ -33,7 +33,7 @@ internal static class JsonConverterEmitter
         sb.AppendLine($"[global::System.Text.Json.Serialization.JsonConverter(typeof({converter}))]");
         sb.AppendLine($"readonly partial struct {name} {{ }}");
         sb.AppendLine();
-        sb.AppendLine($"file sealed class {converter} "
+        sb.AppendLine($"internal sealed class {converter} "
                     + $": global::System.Text.Json.Serialization.JsonConverter<{name}>");
         sb.AppendLine("{");
         sb.AppendLine($"    public override {name} Read("

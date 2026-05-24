@@ -71,3 +71,9 @@ When the consumer project references Dapper, Newtonsoft.Json, MongoDB.Driver, or
 | Swashbuckle (OpenAPI) | `<Id>SchemaFilter` | `OrionKeyOpenApiRegistrar.AddTo(options);` |
 
 OrionKey is released under the MIT License.
+
+## AOT & trimming
+
+OrionKey 0.4+ is compatible with Native AOT and trimming. The runtime assembly carries `<IsAotCompatible>true</IsAotCompatible>` and a CI matrix publishes a self-contained AOT binary on linux-x64 and win-x64 every push.
+
+Newtonsoft.Json, MongoDB.Driver, Swashbuckle.AspNetCore, and Dapper are not fully AOT-clean as of mid-2026 — prefer `System.Text.Json`, EF Core, and the BCL `TypeConverter`/`IParsable` pipelines in AOT projects. When using `System.Text.Json` source generation, register the generated `<Id>JsonConverter` instances into `JsonSerializerOptions.Converters` and pass the options into `new JsonContext(options)`. For `IParsable<T>`, invoke `T.Parse(text, null)` via a `where T : IParsable<T>` constraint (the emitted `Parse` is an explicit interface implementation).
