@@ -187,6 +187,7 @@ OrionKey is one of a set of standalone .NET libraries:
 - [OrionGuard](https://github.com/tunahanaliozturk/OrionGuard) - guard clauses, validation, DDD primitives for .NET.
 - [OrionAudit](https://github.com/tunahanaliozturk/OrionAudit) - automatic EF Core change-audit trail.
 - [OrionPatch](https://github.com/tunahanaliozturk/OrionPatch) - transactional outbox primitive (enqueue inside EF Core SaveChanges, dispatch at-least-once through a pluggable sink).
+- [OrionVault](https://github.com/tunahanaliozturk/OrionVault) - column-level transparent data encryption at rest for EF Core.
 
 ## License
 
