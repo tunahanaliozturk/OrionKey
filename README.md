@@ -19,6 +19,56 @@ serialization, and persistence members, so a domain ID stops being a bare `Guid`
 and becomes a distinct type the compiler can check. There is no base class, no runtime
 reflection, and nothing to wire up: declare the struct, build, use it.
 
+## How it works
+
+A 64-bit Snowflake id packs three fields into a `long`: a millisecond timestamp relative to a
+fixed epoch, a per-process worker id, and a per-millisecond sequence counter. The layout is
+what makes Snowflake ids time-sortable, unique across instances without coordination, and free
+of allocation.
+
+```mermaid
+flowchart LR
+    Sign["sign<br/>1 bit<br/>(always 0)"] --> Ts["timestamp<br/>41 bits<br/>ms since epoch"]
+    Ts --> Worker["worker id<br/>10 bits<br/>0..1023"]
+    Worker --> Seq["sequence<br/>12 bits<br/>0..4095 per ms"]
+
+    classDef fixed fill:#dbeafe,stroke:#1e40af,color:#1e3a8a
+    classDef tunable fill:#fce7f3,stroke:#9d174d,color:#831843
+    class Sign,Ts fixed
+    class Worker,Seq tunable
+```
+
+Worker id is the only field that needs human attention; the timestamp comes from the clock and
+the sequence is internal. Pin it with `OrionKey.Configure(o => o.SnowflakeWorkerId = N)` or
+the `ORIONKEY_WORKER_ID` environment variable in every replica.
+
+OrionKey also ships an idempotency-claim helper used by the OrionShowcase MediatR
+`IdempotencyBehavior`. A command that carries an `IdempotencyKey` first asks the store
+whether a previous response exists for that key, then proceeds only on a fresh claim. The
+key id itself is OrionKey-generated so it sorts naturally.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant App as Application code
+    participant Beh as IdempotencyBehavior
+    participant Store as IIdempotencyStore<br/>(OrionKey-backed)
+    participant Hnd as Command handler
+
+    App->>Beh: Send(cmd, idempotencyKey)
+    Beh->>Store: TryClaimAsync(key)
+    alt fresh claim
+        Store-->>Beh: claimed (new OrionKey id)
+        Beh->>Hnd: invoke
+        Hnd-->>Beh: response
+        Beh->>Store: StoreResponseAsync(key, json)
+        Beh-->>App: response
+    else replay
+        Store-->>Beh: stored response json
+        Beh-->>App: replay (no handler call)
+    end
+```
+
 ## Quick start
 
 ```shell
@@ -128,33 +178,14 @@ warning. In any multi-instance deployment you should pin the worker ID explicitl
 
 ## Benchmarks
 
-Id generation throughput, measured with BenchmarkDotNet. The `--job short` switch was
-passed but BenchmarkDotNet 0.14.0 ran the `DefaultJob` regardless; the full run still
-completed in roughly 4 minutes and produced the statistically stable numbers below.
+See [benchmarks.md](benchmarks.md) for the full run, environment, and per-strategy interpretation. Headline numbers from the last measured run on an Intel Core i7-7820HQ (Kaby Lake), .NET 10.0.5, BenchmarkDotNet 0.14.0:
 
-```text
-BenchmarkDotNet v0.14.0, Windows 11 (10.0.22621.4317/22H2/2022Update/SunValley2)
-Intel Core i7-7820HQ CPU 2.90GHz (Kaby Lake), 1 CPU, 8 logical and 4 physical cores
-.NET SDK 10.0.201
-  [Host]     : .NET 10.0.5 (10.0.526.15411), X64 RyuJIT AVX2
-  DefaultJob : .NET 10.0.5 (10.0.526.15411), X64 RyuJIT AVX2
-```
+- `Guid.NewGuid()` baseline: 70 ns, 0 B allocated.
+- Snowflake (sortable long): 241 ns, 0 B.
+- ULID (sortable string): 102 ns, 80 B.
+- UUIDv7 (sortable Guid): 122 ns, 0 B.
 
-| Method         | Mean        | Error     | StdDev    | Ratio | RatioSD | Gen0   | Allocated | Alloc Ratio |
-|--------------- |------------:|----------:|----------:|------:|--------:|-------:|----------:|------------:|
-| RawGuid        |    70.19 ns |  0.611 ns |  0.510 ns |  1.00 |    0.01 |      - |         - |          NA |
-| Snowflake      |   241.43 ns |  0.073 ns |  0.068 ns |  3.44 |    0.02 |      - |         - |          NA |
-| Ulid           |   101.56 ns |  2.107 ns |  4.398 ns |  1.45 |    0.06 | 0.0191 |      80 B |          NA |
-| NanoId         |   147.43 ns |  2.919 ns |  3.475 ns |  2.10 |    0.05 | 0.0153 |      64 B |          NA |
-| GuidV7         |   121.92 ns |  2.315 ns |  2.377 ns |  1.74 |    0.04 |      - |         - |          NA |
-| Cuid2          | 3,480.20 ns | 69.405 ns | 99.539 ns | 49.59 |    1.44 | 0.0153 |      72 B |          NA |
-| Ksuid          | 1,510.77 ns | 29.633 ns | 45.253 ns | 21.53 |    0.65 | 0.2270 |     952 B |          NA |
-| ObjectId       |    87.82 ns |  1.449 ns |  1.355 ns |  1.25 |    0.02 | 0.0343 |     144 B |          NA |
-| SequentialGuid |   144.65 ns |  2.901 ns |  5.305 ns |  2.06 |    0.08 |      - |         - |          NA |
-
-`RawGuid` (`Guid.NewGuid()`) is the baseline. `Snowflake`, `GuidV7`, and `SequentialGuid` allocate
-nothing; string strategies (`Ulid`, `NanoId`, `Cuid2`, `Ksuid`, `ObjectId`) allocate their string
-storage. Reproduce with `dotnet run -c Release --project bench/Moongazing.OrionKey.Benchmarks`.
+Reproduce with `dotnet run -c Release --project bench/Moongazing.OrionKey.Benchmarks`.
 
 ## Testing
 
