@@ -188,6 +188,13 @@ OrionKey is one of a set of standalone .NET libraries:
 - [OrionAudit](https://github.com/tunahanaliozturk/OrionAudit) - automatic EF Core change-audit trail.
 - [OrionPatch](https://github.com/tunahanaliozturk/OrionPatch) - transactional outbox primitive (enqueue inside EF Core SaveChanges, dispatch at-least-once through a pluggable sink).
 
+### See it in a real app
+
+[Moongazing.OrionShowcase](https://github.com/tunahanaliozturk/OrionShowcase) is a production-shaped banking sample integrating all six Orion packages end-to-end. The OrionKey static facade generates Snowflake IDs for command audit rows; an EF-backed IdempotencyStore bridges the MediatR IdempotencyBehavior to OrionKey-derived identifiers. Concrete usage:
+
+- [src/Moongazing.OrionShowcase.Infrastructure/Audit/EfAuditWriter.cs](https://github.com/tunahanaliozturk/OrionShowcase/blob/main/src/Moongazing.OrionShowcase.Infrastructure/Audit/EfAuditWriter.cs)
+- [src/Moongazing.OrionShowcase.Infrastructure/Idempotency/OrionKeyIdempotencyStore.cs](https://github.com/tunahanaliozturk/OrionShowcase/blob/main/src/Moongazing.OrionShowcase.Infrastructure/Idempotency/OrionKeyIdempotencyStore.cs)
+
 ## License
 
 OrionKey is released under the MIT License. See [LICENSE.txt](LICENSE.txt).
