@@ -80,27 +80,26 @@ public-API surface — purely making existing APIs AOT-clean.
 
 ---
 
-## Phase D — `0.5.0` · Analyzer, code-fix, and stabilization
+## Phase D — `0.5.0` · Analyzer, first slice *(shipped 2026-06-01)*
 
-**Status:** Planned · **Target:** Q4 2026 · **Spec:**
-[2026-05-23 design](superpowers/specs/2026-05-23-orionkey-0.5.0-analyzer-improvements-design.md)
+**Status:** Done
 
-Help users catch misuse before they ship it, and stabilize the public API for 1.0.
+Two new diagnostics shipped:
 
-- New diagnostics:
-  - **ORIONKEY006** — entity ID used as an EF Core key without an explicit `HasConversion`.
-  - **ORIONKEY007** — `[OrionId]` struct declared but never referenced.
-  - **ORIONKEY008** — bare `Guid`/`long` property named `Id`/`*Id` that could be promoted
-    to a strongly-typed ID (suggestion).
-- Code-fix providers:
-  - **ORIONKEY003 fix** — "string requires an explicit strategy" → quick-fix that picks one
-    of `Ulid` / `NanoId` / `Cuid2` / `Ksuid` / `ObjectId`.
-  - **ORIONKEY005 fix** — member-collision diagnostic → quick-fix that removes the
-    duplicate user-declared member.
-- Source-generator performance pass (incremental-generator caching audit, benchmark of
-  compile-time impact on large solutions).
-- Public-API kept stable; any remaining edge-case fixes folded in here so 1.0 is
-  bug-fix-only afterwards.
+- **ORIONKEY006** (Warning) - entity ID used as an EF Core key without an explicit `HasConversion`.
+- **ORIONKEY007** (Info) - `[OrionId]` struct declared but never referenced.
+
+Both run under `WellKnownDiagnosticTags.CompilationEnd` so they aggregate across the whole compilation. Severities respect `.editorconfig` tuning per standard Roslyn conventions.
+
+### Deferred to follow-up patches
+
+The remaining v0.5.0 milestone items did not ship in this release. New targets:
+
+- **ORIONKEY008** (suggestion to promote bare `Guid`/`long` properties named `Id`/`*Id` to typed ids) -> v0.5.1.
+- **ORIONKEY003 / ORIONKEY005 code-fix providers** -> v0.5.2.
+- **Source-generator performance pass** (incremental-generator caching audit + large-solution benchmark) -> v0.5.3.
+
+Public-API kept stable; any remaining edge-case fixes fold into the 0.5.x patches so 1.0 stays bug-fix-only afterwards.
 
 ---
 
