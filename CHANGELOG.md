@@ -4,6 +4,46 @@ All notable changes to OrionKey are documented in this file. The format is based
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-06-01
+
+### Added
+
+#### Two new analyzers (Phase D, first slice)
+
+- **ORIONKEY006** (Warning) - `OrionId entity key has no EF Core HasConversion call`. Fires on a property of an `[OrionId]`/`[StronglyTypedId]` struct type declared on a class that participates in EF Core mapping when no `HasConversion` (or `HasOrionKeyConversion`) wiring is found in any `IEntityTypeConfiguration<T>.Configure` body. Catches the common bug of generating a typed id, putting it on an entity, and forgetting to register the generated `ValueConverter`. Without the converter, EF maps the struct as an owned type and primary/foreign key behaviour breaks silently.
+- **ORIONKEY007** (Info) - `OrionId struct is declared but never referenced`. Fires when a struct decorated with `[OrionId]`/`[StronglyTypedId]` has zero references in the compilation. Catches "I generated the typed id but the call sites still use bare `Guid`/`long`/`string`" cases. Surfaces as a suggestion to keep noise low.
+
+Both analyzers are registered through `WellKnownDiagnosticTags.CompilationEnd` so they aggregate across the whole compilation before reporting. The compilation can still have other errors and the analyzers will run.
+
+#### Analyzer release tracking
+
+- `AnalyzerReleases.Unshipped.md` updated with the two new rules, ready to graduate to `AnalyzerReleases.Shipped.md` on release.
+
+### Known limitation
+
+ORIONKEY007 currently treats generator-emitted partial declarations of an `[OrionId]` struct as references to it. In real consumer builds where the OrionKey source generator runs alongside the analyzer, the diagnostic can under-fire on genuinely unused types. v0.5.1 will harden the check by filtering generated syntax trees from the reference scan and adding a generator-aware test in `AnalyzerHarness`.
+
+### Deferred from v0.5.0
+
+The original v0.5.0 milestone listed four items. Three are de-scoped to keep this minor focused and reviewable:
+
+- **ORIONKEY007 generator-aware reference scan** (known limitation above) -> v0.5.1.
+- **ORIONKEY008** (suggestion to promote bare `Guid`/`long` properties named `Id`/`*Id` to typed ids) -> v0.5.1.
+- **ORIONKEY003 / ORIONKEY005 code-fix providers** -> v0.5.2.
+- **Source-generator performance pass** (incremental-generator caching audit + large-solution benchmark) -> v0.5.3.
+
+`docs/ROADMAP.md` reflects the new targets.
+
+### Migration from v0.4.1
+
+Source-compatible. The new diagnostics surface as Warning / Info and respect `.editorconfig` severity tuning per standard Roslyn analyzer conventions. Consumers that want stricter or laxer behaviour add:
+
+```ini
+[*.cs]
+dotnet_diagnostic.ORIONKEY006.severity = error
+dotnet_diagnostic.ORIONKEY007.severity = none
+```
+
 ## [0.4.1] - 2026-05-26
 
 ### Changed

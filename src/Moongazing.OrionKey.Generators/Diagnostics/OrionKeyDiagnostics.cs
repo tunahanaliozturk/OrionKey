@@ -30,4 +30,25 @@ internal static class OrionKeyDiagnostics
         "ORIONKEY005", "OrionId struct declares a generated member",
         "'{0}' declares a member named '{1}' that the OrionId generator also emits",
         Category, DiagnosticSeverity.Warning, isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor EfKeyWithoutConversion = new(
+        "ORIONKEY006", "OrionId entity key has no EF Core HasConversion call",
+        "Entity property '{0}.{1}' is an OrionId type but no HasConversion / HasOrionKeyConversion " +
+        "call was found. Wire it in IEntityTypeConfiguration.Configure with " +
+        "'builder.Property(x => x.{1}).HasConversion(new {2}ValueConverter())'.",
+        Category, DiagnosticSeverity.Warning, isEnabledByDefault: true,
+        description: "OrionKey ships a generated ValueConverter for every [OrionId] struct. EF Core " +
+        "will not auto-discover it; it must be wired with HasConversion or HasOrionKeyConversion on " +
+        "the property or via a model-builder convention. Without it EF maps the struct as an owned " +
+        "type and primary-key/foreign-key behaviour is broken.",
+        customTags: new[] { WellKnownDiagnosticTags.CompilationEnd });
+
+    public static readonly DiagnosticDescriptor DeclaredButUnused = new(
+        "ORIONKEY007", "OrionId struct is declared but never referenced",
+        "'{0}' is declared with [OrionId] but is not referenced anywhere in this compilation",
+        Category, DiagnosticSeverity.Info, isEnabledByDefault: true,
+        description: "A strongly-typed id that is never used is dead code. This usually means the " +
+        "id was generated but the call sites that should consume it still use bare Guid/long/string. " +
+        "Either reference the id from an entity, DTO, or parameter, or remove the declaration.",
+        customTags: new[] { WellKnownDiagnosticTags.CompilationEnd });
 }
