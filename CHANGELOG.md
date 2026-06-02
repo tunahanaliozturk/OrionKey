@@ -19,10 +19,15 @@ Both analyzers are registered through `WellKnownDiagnosticTags.CompilationEnd` s
 
 - `AnalyzerReleases.Unshipped.md` updated with the two new rules, ready to graduate to `AnalyzerReleases.Shipped.md` on release.
 
+### Known limitation
+
+ORIONKEY007 currently treats generator-emitted partial declarations of an `[OrionId]` struct as references to it. In real consumer builds where the OrionKey source generator runs alongside the analyzer, the diagnostic can under-fire on genuinely unused types. v0.5.1 will harden the check by filtering generated syntax trees from the reference scan and adding a generator-aware test in `AnalyzerHarness`.
+
 ### Deferred from v0.5.0
 
 The original v0.5.0 milestone listed four items. Three are de-scoped to keep this minor focused and reviewable:
 
+- **ORIONKEY007 generator-aware reference scan** (known limitation above) -> v0.5.1.
 - **ORIONKEY008** (suggestion to promote bare `Guid`/`long` properties named `Id`/`*Id` to typed ids) -> v0.5.1.
 - **ORIONKEY003 / ORIONKEY005 code-fix providers** -> v0.5.2.
 - **Source-generator performance pass** (incremental-generator caching audit + large-solution benchmark) -> v0.5.3.
