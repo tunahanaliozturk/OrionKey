@@ -4,6 +4,30 @@ All notable changes to OrionKey are documented in this file. The format is based
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.1] - 2026-06-04
+
+### Fixed
+
+#### ORIONKEY007 now fires in generator-equipped builds
+
+The v0.5.0 CHANGELOG recorded a known limitation: ORIONKEY007 (`OrionId struct declared but never referenced`) counted source-generator-emitted partial declarations as references and therefore silently never fired in real consumer builds where the OrionKey source generator runs alongside the analyzer. v0.5.0 unit tests masked the issue because `AnalyzerHarness.RunAsync` only ran the analyzer against user code.
+
+- `UnusedOrionIdAnalyzer` now skips syntax trees whose file path ends in `.g.cs` or `.generated.cs` when counting references. Symbol discovery (the `RegisterSymbolAction` that decides what is *declared*) is unaffected because user-authored `[OrionId]` structs live in source trees, not generator output.
+- `AnalyzerHarness` gains `RunWithGeneratedAsync(analyzer, userSources, generatedSources)`. Generator-emitted trees are parsed with `path: "OrionKey_{i}.g.cs"` so analyzers using path-based generated-code detection treat them as generator output.
+- New regression test `Generator_emitted_partials_do_not_mask_unused` reproduces the v0.5.0 failure mode and asserts the fix.
+
+### Deferred
+
+The Phase D items previously retargeted from v0.5.0 keep their published targets:
+
+- **ORIONKEY008** (bare `Guid`/`long` `Id` to typed-id suggestion) -> v0.5.2.
+- **ORIONKEY003 / ORIONKEY005 code-fix providers** -> v0.5.3.
+- **Source-generator performance pass** -> v0.5.4.
+
+### Migration from v0.5.0
+
+Source-compatible. The analyzer's behaviour change manifests as ORIONKEY007 diagnostics that v0.5.0 was silently missing. Severity defaults to Info; consumers can tune via `.editorconfig` per standard Roslyn conventions.
+
 ## [0.5.0] - 2026-06-01
 
 ### Added
