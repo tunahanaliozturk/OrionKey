@@ -4,6 +4,34 @@ All notable changes to OrionKey are documented in this file. The format is based
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.2] - 2026-06-09
+
+### Added
+
+#### ORIONKEY008 — bare `Guid` / `long` / `int` / `string` Id should be promoted
+
+- New `BareIdPromotionAnalyzer` flags a property whose name is `Id` or ends with `Id` (PascalCase) and whose CLR type is `System.Guid`, `long`, `int`, or `string`. Severity is Info; the suggestion encourages promoting to `[OrionId<TValue>]` so primary-key / foreign-key bugs (mixing `OrderId` and `CustomerId` in a method signature) become compile-time errors.
+- Nullable value types are unwrapped (`Guid?` matches as `Guid`). Static properties, indexers, and properties already on or already typed as an existing `[OrionId]` struct are skipped to avoid noise.
+- Severity respects `.editorconfig` per standard Roslyn conventions, so legacy areas can opt out with a single line:
+
+```ini
+[*.cs]
+dotnet_diagnostic.ORIONKEY008.severity = none
+```
+
+`AnalyzerReleases.Unshipped.md` updated with the new rule for the next graduation pass.
+
+### Deferred
+
+Remaining Phase D items keep their published targets:
+
+- **ORIONKEY003 / ORIONKEY005 code-fix providers** -> v0.5.3
+- **Source-generator performance pass** (incremental-generator caching audit + large-solution benchmark) -> v0.5.4
+
+### Migration from v0.5.1
+
+Source-compatible. The new diagnostic surfaces as Info; existing builds see new suggestions but no warnings or errors.
+
 ## [0.5.1] - 2026-06-04
 
 ### Fixed
