@@ -99,6 +99,31 @@ public sealed class UnusedOrionIdAnalyzer : DiagnosticAnalyzer
                     continue;
                 }
 
+                // Self-reference filter: drop references that appear syntactically INSIDE
+                // a (possibly partial) declaration of the same type. The OrionKey source
+                // generator emits partial structs like
+                // `partial struct OrderId : IEquatable<OrderId>` plus factory methods
+                // returning OrderId, value-converter declarations, etc. Those are
+                // self-references and must not mask ORIONKEY007. A reference inside a
+                // DIFFERENT type still counts, even when that type was generator-emitted
+                // (Mediator handlers, generated DTOs with an OrderId property, etc.).
+                //
+                // GetEnclosingSymbol is not used here because for nodes in the base-list of
+                // the very type being declared (e.g. the `OrderId` inside
+                // `IEquatable<OrderId>` on `partial struct OrderId`), the enclosing symbol
+                // is the namespace, not the type. Walk the syntax-tree ancestor chain
+                // instead to find the enclosing type declaration syntactically.
+                var enclosingDecl = node.FirstAncestorOrSelf<BaseTypeDeclarationSyntax>();
+                if (enclosingDecl is not null)
+                {
+                    var enclosingType = model.GetDeclaredSymbol(enclosingDecl, semanticCtx.CancellationToken) as INamedTypeSymbol;
+                    if (enclosingType is not null
+                        && SymbolEqualityComparer.Default.Equals(enclosingType, resolved))
+                    {
+                        continue;
+                    }
+                }
+
                 referenced[resolved] = 1;
             }
         });
