@@ -24,9 +24,15 @@ public sealed class StringStrategyCodeFixProviderTests
         var compilation = CSharpCompilation.Create("CodeFixTest", trees, references,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
-        // Fake a diagnostic at the attribute location so the code fix can fire.
-        var attributeStart = source.IndexOf("[OrionId", System.StringComparison.Ordinal);
-        Assert.True(attributeStart >= 0, "test source must contain [OrionId<...>]");
+        // Fake a diagnostic at the attribute location so the code fix can fire. The test
+        // source may use any legal attribute-name shape; match either OrionId<...> or
+        // OrionIdAttribute<...>. Find OrionId then walk forward to the '<'.
+        var orionPos = source.IndexOf("OrionId", System.StringComparison.Ordinal);
+        Assert.True(orionPos >= 0, "test source must contain OrionId");
+        var orionIdPos = source.IndexOf('<', orionPos);
+        Assert.True(orionIdPos >= 0, "test source must contain '<' after OrionId");
+        var attributeStart = source.LastIndexOf('[', orionIdPos);
+        Assert.True(attributeStart >= 0, "test source must contain an attribute list around OrionId<...>");
         var openBracket = source.IndexOf(']', attributeStart);
         Assert.True(openBracket > attributeStart);
         var location = Location.Create(trees[0],
@@ -98,6 +104,48 @@ public sealed class StringStrategyCodeFixProviderTests
         var fixedSource = await ApplyFixAsync(source, "ORIONKEY003-Ulid");
 
         Assert.Contains("[OrionId<string, Ulid>]", fixedSource, System.StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Fix_handles_fully_qualified_attribute_name()
+    {
+        const string source = """
+            namespace Demo;
+
+            [Moongazing.OrionKey.OrionId<string>] public readonly partial struct UserName;
+            """;
+
+        var fixedSource = await ApplyFixAsync(source, "ORIONKEY003-Cuid2");
+
+        Assert.Contains("[Moongazing.OrionKey.OrionId<string, Cuid2>]", fixedSource, System.StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Fix_handles_alias_qualified_attribute_name()
+    {
+        const string source = """
+            namespace Demo;
+
+            [global::Moongazing.OrionKey.OrionId<string>] public readonly partial struct UserName;
+            """;
+
+        var fixedSource = await ApplyFixAsync(source, "ORIONKEY003-Cuid2");
+
+        Assert.Contains("[global::Moongazing.OrionKey.OrionId<string, Cuid2>]", fixedSource, System.StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Fix_handles_OrionIdAttribute_suffix()
+    {
+        const string source = """
+            namespace Demo;
+
+            [OrionIdAttribute<string>] public readonly partial struct UserName;
+            """;
+
+        var fixedSource = await ApplyFixAsync(source, "ORIONKEY003-Cuid2");
+
+        Assert.Contains("[OrionIdAttribute<string, Cuid2>]", fixedSource, System.StringComparison.Ordinal);
     }
 
     [Fact]

@@ -53,11 +53,12 @@ public sealed class StringStrategyCodeFixProvider : CodeFixProvider
         // The analyzer may report on the attribute itself, the attribute list, or the
         // enclosing struct declaration depending on which check fired. Walk ancestors first
         // (struct -> attribute list), then descendants (attribute list -> attribute) to find
-        // the AttributeSyntax for OrionId.
+        // the OrionId AttributeSyntax. The descendant search inspects the underlying
+        // GenericNameSyntax inside any qualified / alias-qualified name shape.
         var anchor = root.FindNode(diagnostic.Location.SourceSpan);
         var attribute = anchor.AncestorsAndSelf().OfType<AttributeSyntax>().FirstOrDefault()
             ?? anchor.DescendantNodesAndSelf().OfType<AttributeSyntax>()
-                .FirstOrDefault(a => a.Name is GenericNameSyntax g && g.Identifier.Text == "OrionId");
+                .FirstOrDefault(a => IsOrionIdAttribute(a.Name));
         if (attribute is null)
         {
             return;
@@ -85,8 +86,14 @@ public sealed class StringStrategyCodeFixProvider : CodeFixProvider
         }
 
         // Replace [OrionId<string>] with [OrionId<string, TStrategy>] by adding a second
-        // type argument. The attribute name shape is GenericName -> TypeArgumentList.
-        if (attribute.Name is not GenericNameSyntax generic)
+        // type argument. The attribute name may appear in any of:
+        //   [OrionId<string>]                                 -> GenericNameSyntax
+        //   [Moongazing.OrionKey.OrionId<string>]             -> QualifiedNameSyntax
+        //   [global::Moongazing.OrionKey.OrionId<string>]     -> AliasQualifiedNameSyntax
+        //   [OrionIdAttribute<string>]                        -> GenericNameSyntax with "OrionIdAttribute"
+        // Walk the name shape to find the underlying GenericNameSyntax.
+        var generic = ExtractGenericName(attribute.Name);
+        if (generic is null)
         {
             return document;
         }
@@ -102,9 +109,39 @@ public sealed class StringStrategyCodeFixProvider : CodeFixProvider
         var newTypeArgs = SyntaxFactory.TypeArgumentList(
             SyntaxFactory.SeparatedList(new[] { stringArg, strategyType }));
         var newGeneric = generic.WithTypeArgumentList(newTypeArgs);
-        var newAttribute = attribute.WithName(newGeneric);
+
+        // Splice newGeneric back into the original name shape, preserving any qualifier.
+        var newName = RebuildName(attribute.Name, newGeneric);
+        var newAttribute = attribute.WithName(newName);
 
         var newRoot = root.ReplaceNode(attribute, newAttribute);
         return document.WithSyntaxRoot(newRoot);
     }
+
+    private static GenericNameSyntax? ExtractGenericName(NameSyntax name) => name switch
+    {
+        GenericNameSyntax g => g,
+        QualifiedNameSyntax q => ExtractGenericName(q.Right),
+        AliasQualifiedNameSyntax a => ExtractGenericName(a.Name),
+        _ => null,
+    };
+
+    private static bool IsOrionIdAttribute(NameSyntax name)
+    {
+        var generic = ExtractGenericName(name);
+        if (generic is null)
+        {
+            return false;
+        }
+        var ident = generic.Identifier.Text;
+        return ident == "OrionId" || ident == "OrionIdAttribute";
+    }
+
+    private static NameSyntax RebuildName(NameSyntax original, GenericNameSyntax newGeneric) => original switch
+    {
+        GenericNameSyntax => newGeneric,
+        QualifiedNameSyntax q => q.WithRight(newGeneric),
+        AliasQualifiedNameSyntax a => a.WithName(newGeneric),
+        _ => newGeneric,
+    };
 }
