@@ -4,6 +4,26 @@ All notable changes to OrionKey are documented in this file. The format is based
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.4] - 2026-06-09
+
+### Added
+
+#### ORIONKEY005 member-collision code-fix provider
+
+Second Phase D code-fix. Source-generator performance pass continues to target v0.5.5.
+
+- **`MemberCollisionCodeFixProvider`** in `Moongazing.OrionKey.CodeFixes` offers one quick fix per colliding member ("Remove user-declared 'X' (generator emits it)") for any of `Value`, `New`, `Empty`, `Equals`, `GetHashCode`, `ToString`, `CompareTo` declared on an `[OrionId]` struct. Removes the declaration via `SyntaxRemoveOptions.KeepNoTrivia` so subsequent compilation lets the source generator emit its own version.
+- One distinct `equivalenceKey` per member name so the IDE can show multiple quick fixes when several members collide.
+- FixAll via `WellKnownFixAllProviders.BatchFixer` for solution-wide cleanup after a bulk rename or generator upgrade.
+
+### Deferred
+
+- **Source-generator performance pass** -> v0.5.5
+
+### Migration from v0.5.3
+
+Source-compatible. Re-install the OrionKey NuGet to pick up the new code-fix; no build-time behaviour change for existing structs.
+
 ## [0.5.3] - 2026-06-09
 
 ### Added
