@@ -4,6 +4,27 @@ All notable changes to OrionKey are documented in this file. The format is based
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.3] - 2026-06-09
+
+### Added
+
+#### `Moongazing.OrionKey.CodeFixes` (NEW assembly) — ORIONKEY003 code-fix provider
+
+The first code-fix provider from the Phase D milestone. Quick-fixes for ORIONKEY005 ship in v0.5.4 alongside the source-generator performance pass.
+
+- **`StringStrategyCodeFixProvider`** offers five "Use *<Strategy>* string strategy" quick fixes for the ORIONKEY003 error `string OrionId requires an explicit strategy`. Picks one of `Cuid2`, `Ulid`, `NanoId`, `Ksuid`, or `ObjectId` and rewrites `[OrionId<string>]` into `[OrionId<string, <Strategy>>]` by inserting the second type argument into the attribute's `GenericNameSyntax`. Each fix has a distinct `equivalenceKey` so the IDE can show all five options.
+- **FixAll**: uses `WellKnownFixAllProviders.BatchFixer`, so consumers can apply the same strategy to every ORIONKEY003 site in a document, project, or solution in one action.
+- **Packaging**: the new `Moongazing.OrionKey.CodeFixes.dll` bundles into the existing `OrionKey` NuGet under `analyzers/dotnet/cs/` alongside the analyzer DLL. IDEs (Visual Studio, Rider, VS Code with the C# extension) pick the code fixes up automatically.
+
+### Deferred
+
+- **ORIONKEY005 code-fix provider** (member-collision quick-fix removing the duplicate user-declared member) -> v0.5.4
+- **Source-generator performance pass** -> v0.5.5
+
+### Migration from v0.5.2
+
+Source-compatible. The new assembly is bundled into the OrionKey NuGet; consumers re-install the package (or restore) to see the new quick fixes in their IDE. No build-time behaviour change.
+
 ## [0.5.2] - 2026-06-09
 
 ### Added
