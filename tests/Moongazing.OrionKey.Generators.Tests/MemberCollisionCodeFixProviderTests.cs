@@ -16,6 +16,12 @@ public sealed class MemberCollisionCodeFixProviderTests
 {
     private static async Task<string> ApplyFixAsync(string source, string equivalenceKey)
     {
+        var memberName = equivalenceKey.Substring("ORIONKEY005-".Length);
+        return await ApplyFixAsync(source, equivalenceKey, memberName);
+    }
+
+    private static async Task<string> ApplyFixAsync(string source, string equivalenceKey, string memberName)
+    {
         var trees = new[] { CSharpSyntaxTree.ParseText(source, path: "User.cs") };
         var references = System.AppDomain.CurrentDomain.GetAssemblies()
             .Where(a => !a.IsDynamic && !string.IsNullOrEmpty(a.Location))
@@ -29,10 +35,14 @@ public sealed class MemberCollisionCodeFixProviderTests
         var structDecl = root.DescendantNodes().OfType<StructDeclarationSyntax>().First();
         var location = Location.Create(trees[0], structDecl.Identifier.Span);
 
+        // Use the production analyzer message format so the code fix can extract the member
+        // name from the rendered message: "'{0}' declares a member named '{1}' that the
+        // OrionId generator also emits".
         var descriptor = new DiagnosticDescriptor("ORIONKEY005",
             "OrionId struct declares a generated member",
-            "test", "OrionKey", DiagnosticSeverity.Warning, isEnabledByDefault: true);
-        var diagnostic = Diagnostic.Create(descriptor, location);
+            "'{0}' declares a member named '{1}' that the OrionId generator also emits",
+            "OrionKey", DiagnosticSeverity.Warning, isEnabledByDefault: true);
+        var diagnostic = Diagnostic.Create(descriptor, location, structDecl.Identifier.Text, memberName);
 
         var workspace = new Microsoft.CodeAnalysis.AdhocWorkspace();
         var projectInfo = ProjectInfo.Create(
@@ -160,6 +170,70 @@ public sealed class MemberCollisionCodeFixProviderTests
 
         Assert.DoesNotContain("public long Value", fixedSource, System.StringComparison.Ordinal);
         Assert.Contains("Description", fixedSource, System.StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Removes_only_colliding_declarator_from_multi_variable_field()
+    {
+        // Field declaration with two declarators: Empty (collides) + Sentinel (does not).
+        // Prior implementation dropped the whole FieldDeclarationSyntax and silently lost
+        // Sentinel; the fix MUST narrow removal to the colliding VariableDeclarator only.
+        const string source = """
+            namespace Demo;
+
+            [OrionId<long>]
+            public readonly partial struct UserId
+            {
+                public static readonly UserId Empty = default, Sentinel = default;
+            }
+            """;
+
+        var fixedSource = await ApplyFixAsync(source, "ORIONKEY005-Empty");
+
+        Assert.DoesNotContain("Empty", fixedSource, System.StringComparison.Ordinal);
+        Assert.Contains("Sentinel", fixedSource, System.StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Skips_diagnostics_for_member_names_not_in_generated_set()
+    {
+        // Defensive: the analyzer only emits ORIONKEY005 for members in the generator's
+        // emitted set, but a rogue diagnostic citing 'SomethingElse' must NOT be turned into
+        // a quick fix - we'd silently delete an unrelated member.
+        const string source = """
+            namespace Demo;
+
+            [OrionId<long>]
+            public readonly partial struct UserId
+            {
+                public long SomethingElse { get; }
+            }
+            """;
+
+        // Construct the diagnostic with a member name NOT in the generated set.
+        var trees = new[] { CSharpSyntaxTree.ParseText(source, path: "User.cs") };
+        var root = await trees[0].GetRootAsync();
+        var structDecl = root.DescendantNodes().OfType<StructDeclarationSyntax>().First();
+        var location = Location.Create(trees[0], structDecl.Identifier.Span);
+        var descriptor = new DiagnosticDescriptor("ORIONKEY005",
+            "OrionId struct declares a generated member",
+            "'{0}' declares a member named '{1}' that the OrionId generator also emits",
+            "OrionKey", DiagnosticSeverity.Warning, isEnabledByDefault: true);
+        var diagnostic = Diagnostic.Create(descriptor, location, "UserId", "SomethingElse");
+
+        var workspace = new Microsoft.CodeAnalysis.AdhocWorkspace();
+        var project = workspace.AddProject(ProjectInfo.Create(
+            ProjectId.CreateNewId(), VersionStamp.Default, "T", "T", LanguageNames.CSharp));
+        var document = workspace.AddDocument(project.Id, "User.cs", SourceText.From(source));
+
+        CodeAction? registered = null;
+        var context = new CodeFixContext(document, diagnostic,
+            (action, _) => registered = action,
+            System.Threading.CancellationToken.None);
+
+        await new MemberCollisionCodeFixProvider().RegisterCodeFixesAsync(context);
+
+        Assert.Null(registered);
     }
 
     [Fact]
