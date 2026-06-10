@@ -28,6 +28,24 @@ internal static class EfCoreConverterEmitter
         sb.AppendLine("{");
         sb.AppendLine($"    public {converter}() : base(id => id.Value, value => new {name}(value)) {{ }}");
         sb.AppendLine("}");
+
+        // v0.5.10: emit the HasOrionKeyConversion extension the ORIONKEY006 message
+        // references. v0.5.9 and earlier reported the diagnostic with a recommendation
+        // to call HasOrionKeyConversion but no such method existed - users had to call
+        // HasConversion(new {Name}ValueConverter()) manually. The generated extension
+        // closes that gap.
+        sb.AppendLine();
+        sb.AppendLine($"/// <summary>EF Core fluent helpers for <see cref=\"{name}\"/> properties.</summary>");
+        sb.AppendLine($"public static class {name}EfCoreExtensions");
+        sb.AppendLine("{");
+        sb.AppendLine($"    /// <summary>Wire the generated <see cref=\"{converter}\"/> on a <c>PropertyBuilder&lt;{name}&gt;</c>. Equivalent to <c>HasConversion(new {converter}())</c>.</summary>");
+        sb.AppendLine($"    public static global::Microsoft.EntityFrameworkCore.Metadata.Builders.PropertyBuilder<{name}> HasOrionKeyConversion(");
+        sb.AppendLine($"        this global::Microsoft.EntityFrameworkCore.Metadata.Builders.PropertyBuilder<{name}> builder)");
+        sb.AppendLine("    {");
+        sb.AppendLine("        if (builder is null) { throw new global::System.ArgumentNullException(nameof(builder)); }");
+        sb.AppendLine($"        return builder.HasConversion(new {converter}());");
+        sb.AppendLine("    }");
+        sb.AppendLine("}");
         return sb.ToString();
     }
 }
