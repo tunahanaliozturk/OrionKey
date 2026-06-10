@@ -4,6 +4,26 @@ All notable changes to OrionKey are documented in this file. The format is based
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.8] - 2026-06-10
+
+### Added
+
+#### ORIONKEY004 incompatible-strategy code-fix provider
+
+Fourth Phase D code-fix. ORIONKEY004 fires when `[OrionId<TValue, TStrategy>]` pairs a strategy with an incompatible value type. v0.5.8 ships a quick fix that rewrites the second type argument.
+
+- `IncompatibleStrategyCodeFixProvider`: `Guid` -> `GuidV7`, `long` / `Int64` -> `Snowflake`, `string` -> `Ulid`.
+- Preserves trivia on the strategy arg.
+- FixAll via `BatchFixer`.
+
+### Tests
+
+5 new facts.
+
+### Migration from v0.5.7
+
+Source-compatible.
+
 ## [0.5.7] - 2026-06-10
 
 ### Added
