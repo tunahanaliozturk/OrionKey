@@ -23,10 +23,14 @@ using System.Collections.Concurrent;
 /// <para>
 /// The registry is process-global and append-only; calling <see cref="Register{TId}"/>
 /// twice for the same type is idempotent (the first registration wins). Consumers
-/// typically call <see cref="Register{TId}"/> from a one-time bootstrap method, e.g.:
+/// typically call <see cref="Register{TId}"/> from a one-time bootstrap method. The
+/// generator emits <see cref="IParsable{TSelf}.Parse"/> as an EXPLICIT static interface
+/// implementation, so the parse delegate needs to call through the interface (or use the
+/// public <c>TryParse</c> overload), not <c>TId.Parse</c> directly:
 /// <code>
-/// OrionKeyTypeRegistry.Register&lt;UserId&gt;(s =&gt; UserId.Parse(s), id =&gt; id.ToString());
-/// OrionKeyTypeRegistry.Register&lt;OrderId&gt;(s =&gt; OrderId.Parse(s), id =&gt; id.ToString());
+/// OrionKeyTypeRegistry.Register&lt;UserId&gt;(
+///     parse: s =&gt; ((IParsable&lt;UserId&gt;)default!).Parse(s, formatProvider: null),
+///     format: id =&gt; id.ToString());
 /// </code>
 /// </para>
 /// </remarks>
