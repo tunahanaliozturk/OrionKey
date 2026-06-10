@@ -4,6 +4,37 @@ All notable changes to OrionKey are documented in this file. The format is based
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.6] - 2026-06-10
+
+### Added
+
+#### `OrionKeyTypeRegistry` - NativeAOT-friendly cross-type dispatch
+
+Framework authors (ASP.NET model binders, route value converters, MVC content-type-aware deserializers) historically had to call `typeof(IdType).GetMethod("Parse")` at request time when handling many OrionId struct types in a single method. That path requires reflection-based metadata, which the trim / NativeAOT analyzer warns about and which is the largest source of trim warnings in framework-level ID-agnostic code.
+
+`OrionKeyTypeRegistry` shifts the decision back to startup time, where consumers register each ID type with strongly-typed delegates the generator already emits (per-struct `IParsable<T>.Parse` + `ToString`). At dispatch time the registry is a `ConcurrentDictionary<Type, (parse, format)>` lookup keyed by `Type` - no reflection, no `MakeGenericType`, no `Activator.CreateInstance`.
+
+- **`Register<TId>(parse, format)`** - idempotent registration; first call wins. Returns `true` when this call performed the registration, `false` when an earlier call already won.
+- **`TryParse(Type idType, string value, out object? id)`** - dispatch parsing via the registered delegate; returns `false` for unregistered types or when the delegate throws `FormatException` / `ArgumentException` / `OverflowException`.
+- **`Format(Type idType, object id)`** - dispatch formatting; throws when the type is unregistered or when the instance isn't of the expected runtime type.
+- **`IsRegistered(Type)`** + **`RegisteredTypes()`** - introspection.
+- All implementation paths are AOT-clean (no reflection at the dispatch site; only `Type` equality comparisons).
+
+### Tests
+
+12 new `OrionKeyTypeRegistryTests` facts in a dedicated test collection (parallel-disabled because state is process-global). 62 facts in the runtime test suite.
+
+### Migration from v0.5.5
+
+Source-compatible. Existing consumers don't need to register anything; the registry is opt-in. Framework consumers wire all their ID types once at startup:
+
+```csharp
+OrionKeyTypeRegistry.Register<UserId>(s => UserId.Parse(s), id => id.ToString());
+OrionKeyTypeRegistry.Register<OrderId>(s => OrderId.Parse(s), id => id.ToString());
+// ... then dispatch from a single method:
+if (OrionKeyTypeRegistry.TryParse(idType, raw, out var id)) { ... }
+```
+
 ## [0.5.5] - 2026-06-10
 
 ### Changed
