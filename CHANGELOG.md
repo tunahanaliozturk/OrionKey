@@ -4,6 +4,25 @@ All notable changes to OrionKey are documented in this file. The format is based
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.7] - 2026-06-10
+
+### Added
+
+#### ORIONKEY007 unused-OrionId code-fix provider
+
+Third Phase D code-fix. ORIONKEY007 fires when an `[OrionId]` struct is declared but never referenced - dead code that usually means the generator emitted an id type but call sites still use bare `Guid`/`long`/`string`. v0.5.7 adds the "remove the dead declaration" quick fix.
+
+- **`UnusedOrionIdCodeFixProvider`** in `Moongazing.OrionKey.CodeFixes` offers a single quick fix: "Remove unused OrionId struct 'X'". Removes the entire `StructDeclarationSyntax` via `SyntaxRemoveOptions.KeepEndOfLine | KeepExteriorTrivia` so the surrounding namespace formatting and any file-level header comments survive intact.
+- FixAll via `WellKnownFixAllProviders.BatchFixer` for solution-wide dead-code cleanup after a refactor.
+
+### Tests
+
+4 new facts: removes the unused struct declaration, preserves surrounding namespace + anchor types, advertises only ORIONKEY007 as fixable, supports BatchFixer for FixAll. 109 facts total in the generator test suite.
+
+### Migration from v0.5.6
+
+Source-compatible. Re-install the OrionKey NuGet to see the new quick fix.
+
 ## [0.5.6] - 2026-06-10
 
 ### Added
