@@ -4,6 +4,28 @@ All notable changes to OrionKey are documented in this file. The format is based
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.9] - 2026-06-11
+
+### Added
+
+#### ORIONKEY008 bare-id-promotion code-fix provider
+
+Fifth Phase D code-fix. ORIONKEY008 fires on properties like `public Guid Id` / `public long CustomerId` / `public string SkuId` - bare primitives that should be strongly-typed ids. v0.5.9 ships a quick fix that rewrites the property type AND emits a sibling `[OrionId<TValue>] public readonly partial struct` in the same namespace.
+
+- `BareIdPromotionCodeFixProvider` in `Moongazing.OrionKey.CodeFixes`.
+- Naming rule: `Id` -> `{ClassName}Id` (e.g. `Order.Id` -> `OrderId`); `XxxId` -> `XxxId` (e.g. `CustomerId` -> `CustomerId`).
+- Value-type mapping: `Guid` / `long` / `int` emit `[OrionId<TValue>]`; `string` emits `[OrionId<string, Ulid>]`.
+- Skips emitting the struct when one with the matching name already exists in the file.
+- FixAll via `BatchFixer` for solution-wide cleanup of legacy bare-id models.
+
+### Tests
+
+6 new facts.
+
+### Migration from v0.5.8
+
+Source-compatible.
+
 ## [0.5.8] - 2026-06-10
 
 ### Added
