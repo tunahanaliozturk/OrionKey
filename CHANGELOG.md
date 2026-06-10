@@ -4,6 +4,29 @@ All notable changes to OrionKey are documented in this file. The format is based
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.5] - 2026-06-10
+
+### Changed
+
+#### Source-generator performance pass
+
+End-to-end perf pass for the incremental pipeline. No behaviour change, but the cache is now actually used.
+
+- **Predicate filter narrows up-front**: `predicate: static (node, _) => node is StructDeclarationSyntax` skips class / record / interface candidates before attribute discovery walks them.
+- **Cache-friendly pipeline elements**: the transform stage now parses the symbol into a value-equatable `ParsedOrionId` (an `OrionIdModel? + EquatableArray<DiagnosticInfo>` record) instead of returning `INamedTypeSymbol`. Symbols are NOT cache-comparable across compilations - the previous shape busted the cache on every keystroke, re-parsing every `[OrionId]` struct in the solution. `ParsedOrionId` is structural-equal so Roslyn reuses cached outputs whenever the input symbol hasn't changed.
+- **Single parse per struct**: both the per-struct emit and the all-models registrar emit consume the SAME parsed pipeline. Previously each struct was parsed twice (once for individual emit, once for the all-models collect). Diagnostics are also produced once.
+- **`EquatableArray<T>` for collections**: the all-models collect step returns an `EquatableArray<OrionIdModel>` (structural equality) instead of the default `ImmutableArray<T>` (reference identity), so an unrelated edit doesn't bust the registrar cache.
+- **`DiagnosticInfo` value record**: cache-friendly form of `Diagnostic` (descriptor id + location bounds + message args). The emit stage reconstructs a `Diagnostic` at output time. Without this, tunnelling `Diagnostic` instances through the pipeline busted the cache the same way symbols did.
+- **`WithTrackingName` on key stages**: `OrionId_OneArg_Parse`, `OrionId_TwoArg_Parse`, and `OrionId_AllModels` are tagged so generator-cache tests can assert specific stages stayed cached across recompiles.
+
+### Tests
+
+2 new `IncrementalCacheTests` facts: identical re-run reuses cached outputs, unrelated source-tree edit does NOT re-run the OrionId transform / all-models collect. All 103 existing tests still pass; 105 total.
+
+### Migration from v0.5.4
+
+Source-compatible. No public API changes. The legacy `OrionIdParser.TryParse(symbol, out model, out diagnostics)` overload is retained for the analyzer surfaces that still consume `Diagnostic` directly; the incremental pipeline now uses the new `OrionIdParser.Parse(symbol)` shape internally.
+
 ## [0.5.4] - 2026-06-09
 
 ### Added
