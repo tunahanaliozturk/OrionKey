@@ -4,6 +4,33 @@ All notable changes to OrionKey are documented in this file. The format is based
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.10] - 2026-06-11
+
+### Added
+
+#### `HasOrionKeyConversion()` extension auto-emitted per OrionId
+
+The ORIONKEY006 analyzer (since v0.5.x) reports `HasConversion / HasOrionKeyConversion` as the documented fix, but `HasOrionKeyConversion` itself never shipped - consumers had to write `HasConversion(new {Name}ValueConverter())` manually. v0.5.10 closes that gap by generating the helper alongside the value converter.
+
+- For every `[OrionId]` struct compiled with an EF Core reference, the generator emits:
+  - `{Name}ValueConverter` (unchanged from v0.5.9).
+  - `{Name}EfCoreExtensions.HasOrionKeyConversion(this PropertyBuilder<{Name}> builder)` extension method that wires the matching converter.
+- Return type is `PropertyBuilder<{Name}>` so the call chains: `builder.Property(x => x.Id).HasOrionKeyConversion().IsRequired()`.
+- Null-builder argument is guarded.
+- Emitted in the same namespace as the id so it is reachable wherever the id type is in scope.
+
+### Tests
+
+4 new emit-snapshot facts.
+
+### Migration from v0.5.9
+
+Source-compatible.
+
+```csharp
+builder.Property(x => x.UserId).HasOrionKeyConversion();
+```
+
 ## [0.5.9] - 2026-06-11
 
 ### Added
