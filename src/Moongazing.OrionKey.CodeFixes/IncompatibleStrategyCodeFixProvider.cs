@@ -47,10 +47,23 @@ public sealed class IncompatibleStrategyCodeFixProvider : CodeFixProvider
             return;
         }
 
-        // The diagnostic is reported on the [OrionId<TValue, TStrategy>] attribute. Walk
-        // up to the AttributeSyntax and find its GenericNameSyntax (the OrionId<...> part).
+        // ORIONKEY004 is reported with symbol.Locations[0] - that source span points at
+        // the struct's identifier, NOT the attribute. So we first try walking UP (in case
+        // a future analyzer revision points at the attribute directly), then fall back to
+        // walking DOWN from the enclosing struct to find the OrionId<TValue, TStrategy>
+        // attribute. Either path must yield the GenericNameSyntax we are about to rewrite.
         var anchor = root.FindNode(diagnostic.Location.SourceSpan);
         var attribute = anchor.AncestorsAndSelf().OfType<AttributeSyntax>().FirstOrDefault();
+        if (attribute is null)
+        {
+            var structDecl = anchor.AncestorsAndSelf().OfType<StructDeclarationSyntax>().FirstOrDefault();
+            attribute = structDecl?
+                .AttributeLists
+                .SelectMany(list => list.Attributes)
+                .FirstOrDefault(a => a.Name is GenericNameSyntax g
+                                     && g.Identifier.ValueText == "OrionId"
+                                     && g.TypeArgumentList.Arguments.Count == 2);
+        }
         if (attribute?.Name is not GenericNameSyntax generic)
         {
             return;

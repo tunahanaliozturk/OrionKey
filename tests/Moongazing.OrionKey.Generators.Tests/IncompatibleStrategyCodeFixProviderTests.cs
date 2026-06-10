@@ -98,6 +98,49 @@ public sealed class IncompatibleStrategyCodeFixProviderTests
     }
 
     [Fact]
+    public async Task Resolves_attribute_when_diagnostic_location_is_struct_identifier()
+    {
+        // The analyzer reports ORIONKEY004 at symbol.Locations[0] - the struct's
+        // identifier, NOT the attribute. This test pins the cursor to the struct
+        // identifier (not the [OrionId<...>] attribute) and verifies the code-fix still
+        // discovers the attribute via the StructDeclarationSyntax fallback.
+        const string source = """
+            namespace Demo;
+
+            [OrionId<Guid, Snowflake>]
+            public readonly partial struct UserId { }
+            """;
+
+        var tree = CSharpSyntaxTree.ParseText(source, path: "User.cs");
+        var root = await tree.GetRootAsync();
+        var structDecl = root.DescendantNodes().OfType<StructDeclarationSyntax>().First();
+        var descriptor = new DiagnosticDescriptor("ORIONKEY004",
+            "Incompatible OrionId strategy",
+            "Strategy '{0}' is not compatible with value type '{1}'",
+            "OrionKey", DiagnosticSeverity.Error, isEnabledByDefault: true);
+        var diagnostic = Diagnostic.Create(descriptor,
+            Location.Create(tree, structDecl.Identifier.Span), "Snowflake", "Guid");
+
+        var workspace = new Microsoft.CodeAnalysis.AdhocWorkspace();
+        var project = workspace.AddProject(ProjectInfo.Create(
+            ProjectId.CreateNewId(), VersionStamp.Default,
+            "TestProject", "TestProject", LanguageNames.CSharp));
+        var document = workspace.AddDocument(project.Id, "User.cs", SourceText.From(source));
+
+        CodeAction? selected = null;
+        var context = new CodeFixContext(document, diagnostic,
+            (action, _) => { selected = action; },
+            System.Threading.CancellationToken.None);
+        await new IncompatibleStrategyCodeFixProvider().RegisterCodeFixesAsync(context);
+
+        Assert.NotNull(selected);
+        var ops = await selected!.GetOperationsAsync(System.Threading.CancellationToken.None);
+        var changed = ((ApplyChangesOperation)ops.Single()).ChangedSolution.GetDocument(document.Id)!;
+        var fixedSource = (await changed.GetTextAsync()).ToString();
+        Assert.Contains("OrionId<Guid, GuidV7>", fixedSource, System.StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task Provider_advertises_only_ORIONKEY004_as_fixable()
     {
         var provider = new IncompatibleStrategyCodeFixProvider();
