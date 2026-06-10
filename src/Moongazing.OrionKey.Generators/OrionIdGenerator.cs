@@ -27,7 +27,13 @@ public sealed class OrionIdGenerator : IIncrementalGenerator
         //     rebuilt every keystroke so the cache was permanently cold).
         var oneArg = context.SyntaxProvider.ForAttributeWithMetadataName(
             OneArgAttribute,
-            predicate: static (node, _) => node is StructDeclarationSyntax,
+            // Include both plain struct declarations and record struct declarations - record
+// structs also pass [AttributeUsage(AttributeTargets.Struct)] so a user-annotated
+// `readonly partial record struct UserId { }` previously slipped through the
+// transform and surfaced as an ORIONKEY001 (not-readonly-partial-struct) noise
+// diagnostic. RecordStructDeclarationSyntax IS-A TypeDeclarationSyntax but not
+// StructDeclarationSyntax, so it has to be added explicitly.
+predicate: static (node, _) => node is StructDeclarationSyntax or RecordDeclarationSyntax,
             transform: static (ctx, _) => ctx.TargetSymbol is INamedTypeSymbol s
                 ? OrionIdParser.Parse(s)
                 : default)
@@ -35,7 +41,13 @@ public sealed class OrionIdGenerator : IIncrementalGenerator
 
         var twoArg = context.SyntaxProvider.ForAttributeWithMetadataName(
             TwoArgAttribute,
-            predicate: static (node, _) => node is StructDeclarationSyntax,
+            // Include both plain struct declarations and record struct declarations - record
+// structs also pass [AttributeUsage(AttributeTargets.Struct)] so a user-annotated
+// `readonly partial record struct UserId { }` previously slipped through the
+// transform and surfaced as an ORIONKEY001 (not-readonly-partial-struct) noise
+// diagnostic. RecordStructDeclarationSyntax IS-A TypeDeclarationSyntax but not
+// StructDeclarationSyntax, so it has to be added explicitly.
+predicate: static (node, _) => node is StructDeclarationSyntax or RecordDeclarationSyntax,
             transform: static (ctx, _) => ctx.TargetSymbol is INamedTypeSymbol s
                 ? OrionIdParser.Parse(s)
                 : default)
