@@ -60,7 +60,7 @@ public sealed class BareIdPromotionCodeFixProviderTests
         var result = await ApplyFixAsync(source, "Id");
 
         Assert.Contains("public OrderId Id", result, System.StringComparison.Ordinal);
-        Assert.Contains("[OrionId<Guid>]", result, System.StringComparison.Ordinal);
+        Assert.Contains("[global::Moongazing.OrionKey.OrionId<Guid>]", result, System.StringComparison.Ordinal);
         Assert.Contains("public readonly partial struct OrderId;", result, System.StringComparison.Ordinal);
     }
 
@@ -79,7 +79,7 @@ public sealed class BareIdPromotionCodeFixProviderTests
         var result = await ApplyFixAsync(source, "CustomerId");
 
         Assert.Contains("public CustomerId CustomerId", result, System.StringComparison.Ordinal);
-        Assert.Contains("[OrionId<long>]", result, System.StringComparison.Ordinal);
+        Assert.Contains("[global::Moongazing.OrionKey.OrionId<long>]", result, System.StringComparison.Ordinal);
         Assert.Contains("public readonly partial struct CustomerId;", result, System.StringComparison.Ordinal);
     }
 
@@ -97,7 +97,7 @@ public sealed class BareIdPromotionCodeFixProviderTests
 
         var result = await ApplyFixAsync(source, "SkuId");
 
-        Assert.Contains("[OrionId<string, Ulid>]", result, System.StringComparison.Ordinal);
+        Assert.Contains("[global::Moongazing.OrionKey.OrionId<string, global::Moongazing.OrionKey.Ulid>]", result, System.StringComparison.Ordinal);
         Assert.Contains("public readonly partial struct SkuId;", result, System.StringComparison.Ordinal);
     }
 
@@ -122,6 +122,24 @@ public sealed class BareIdPromotionCodeFixProviderTests
         // The struct should appear EXACTLY once (the pre-existing declaration).
         var occurrences = result.Split("public readonly partial struct OrderId").Length - 1;
         Assert.Equal(1, occurrences);
+    }
+
+    [Fact]
+    public async Task Promotes_nullable_Guid_Id_by_unwrapping_NullableTypeSyntax()
+    {
+        const string source = """
+            namespace Demo;
+
+            public class Order
+            {
+                public Guid? Id { get; set; }
+            }
+            """;
+
+        var result = await ApplyFixAsync(source, "Id");
+
+        Assert.Contains("public OrderId Id", result, System.StringComparison.Ordinal);
+        Assert.Contains("[global::Moongazing.OrionKey.OrionId<Guid>]", result, System.StringComparison.Ordinal);
     }
 
     [Fact]

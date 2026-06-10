@@ -101,7 +101,11 @@ public sealed class BareIdPromotionCodeFixProvider : CodeFixProvider
         valueTypeKeyword = string.Empty;
         requiresStrategy = false;
 
-        var (kw, strat) = property.Type switch
+        // The analyzer unwraps Nullable<T> when reporting ORIONKEY008 (Guid? Id, long? CustomerId
+        // also fire), so the code-fix MUST mirror that. NullableTypeSyntax wraps the underlying
+        // type - peel it off before matching.
+        var typeToMatch = property.Type is NullableTypeSyntax nullable ? nullable.ElementType : property.Type;
+        var (kw, strat) = typeToMatch switch
         {
             PredefinedTypeSyntax { Keyword.ValueText: "long" } => ("long", false),
             PredefinedTypeSyntax { Keyword.ValueText: "int" } => ("int", false),
@@ -153,9 +157,13 @@ public sealed class BareIdPromotionCodeFixProvider : CodeFixProvider
         {
             return document.WithSyntaxRoot(rewritten);
         }
+        // Qualify the attribute + strategy fully so the emitted struct compiles even when
+        // the consumer's file does NOT have `using Moongazing.OrionKey;` - the analyzer
+        // does not control imports. A simplifier annotation lets the IDE collapse the
+        // FQN when the using is present.
         var attributeText = requiresStrategy
-            ? $"[OrionId<{valueTypeKeyword}, Ulid>]"
-            : $"[OrionId<{valueTypeKeyword}>]";
+            ? $"[global::Moongazing.OrionKey.OrionId<{valueTypeKeyword}, global::Moongazing.OrionKey.Ulid>]"
+            : $"[global::Moongazing.OrionKey.OrionId<{valueTypeKeyword}>]";
         var structText = $"\n{attributeText}\npublic readonly partial struct {newIdName};\n";
         var newMember = SyntaxFactory.ParseMemberDeclaration(structText);
         if (newMember is null)
