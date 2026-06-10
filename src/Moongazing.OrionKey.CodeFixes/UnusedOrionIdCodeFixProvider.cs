@@ -54,26 +54,83 @@ public sealed class UnusedOrionIdCodeFixProvider : CodeFixProvider
         context.RegisterCodeFix(
             CodeAction.Create(
                 title: $"Remove unused OrionId struct '{structName}'",
-                createChangedDocument: ct => RemoveStructAsync(context.Document, structDecl, ct),
+                createChangedSolution: ct => RemoveAllPartialDeclarationsAsync(context.Document, structDecl, ct),
                 equivalenceKey: "ORIONKEY007-remove"),
             diagnostic);
     }
 
-    private static async Task<Document> RemoveStructAsync(
+    private static async Task<Solution> RemoveAllPartialDeclarationsAsync(
+        Document document, StructDeclarationSyntax structDecl, CancellationToken cancellationToken)
+    {
+        var solution = document.Project.Solution;
+
+        // [OrionId] structs are declared `readonly partial struct`; a single type can have
+        // multiple partial declarations across files. ORIONKEY007 reports on one Location,
+        // so removing JUST the StructDeclarationSyntax under the diagnostic anchor would
+        // leave the rest of the partial type behind. Resolve the symbol, walk every
+        // DeclaringSyntaxReference, and remove the StructDeclarationSyntax ancestor of
+        // each one so the type is removed wholesale.
+        var semanticModel = await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
+        var symbol = semanticModel?.GetDeclaredSymbol(structDecl, cancellationToken);
+        if (symbol is null)
+        {
+            // Fall back to the single-document removal if we cannot resolve the symbol.
+            return await RemoveSingleAsync(document, structDecl, cancellationToken).ConfigureAwait(false);
+        }
+
+        // Group partial declarations by document so we apply one edit per document.
+        var byDocument = symbol.DeclaringSyntaxReferences
+            .GroupBy(r => solution.GetDocument(r.SyntaxTree));
+
+        foreach (var group in byDocument)
+        {
+            var doc = group.Key;
+            if (doc is null)
+            {
+                continue;
+            }
+            var docRoot = await doc.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
+            if (docRoot is null)
+            {
+                continue;
+            }
+            // Remove each StructDeclarationSyntax that contains a referenced syntax node.
+            var nodesToRemove = group
+                .Select(r => r.GetSyntax(cancellationToken))
+                .Select(s => s as StructDeclarationSyntax ?? s.AncestorsAndSelf().OfType<StructDeclarationSyntax>().FirstOrDefault())
+                .Where(s => s is not null)
+                .Distinct()
+                .ToList();
+            if (nodesToRemove.Count == 0)
+            {
+                continue;
+            }
+            var newRoot = docRoot.RemoveNodes(
+                nodesToRemove!,
+                SyntaxRemoveOptions.KeepEndOfLine | SyntaxRemoveOptions.KeepExteriorTrivia);
+            if (newRoot is null)
+            {
+                continue;
+            }
+            solution = solution.WithDocumentSyntaxRoot(doc.Id, newRoot);
+        }
+
+        return solution;
+    }
+
+    private static async Task<Solution> RemoveSingleAsync(
         Document document, StructDeclarationSyntax structDecl, CancellationToken cancellationToken)
     {
         var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
         if (root is null)
         {
-            return document;
+            return document.Project.Solution;
         }
-
-        // KeepEndOfLine keeps the trailing line break so the surrounding namespace/file
-        // formatting stays sane. KeepExteriorTrivia preserves leading comments (e.g. a
-        // file-level header) that the struct's leading trivia would otherwise carry off.
         var newRoot = root.RemoveNode(
             structDecl,
             SyntaxRemoveOptions.KeepEndOfLine | SyntaxRemoveOptions.KeepExteriorTrivia);
-        return newRoot is null ? document : document.WithSyntaxRoot(newRoot);
+        return newRoot is null
+            ? document.Project.Solution
+            : document.WithSyntaxRoot(newRoot).Project.Solution;
     }
 }
