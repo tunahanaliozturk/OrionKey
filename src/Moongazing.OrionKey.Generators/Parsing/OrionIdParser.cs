@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Moongazing.OrionKey.Generators.Diagnostics;
 using Moongazing.OrionKey.Generators.Model;
@@ -9,26 +10,53 @@ namespace Moongazing.OrionKey.Generators.Parsing;
 /// <summary>Turns an <c>[OrionId]</c>-decorated type symbol into an <see cref="OrionIdModel"/>.</summary>
 internal static class OrionIdParser
 {
+    /// <summary>
+    /// Parse a symbol into a cache-friendly <see cref="ParsedOrionId"/>. This is the entry
+    /// point used by the v0.5.5 incremental pipeline; the result is value-equatable so
+    /// Roslyn can cache it across recompiles.
+    /// </summary>
+    public static ParsedOrionId Parse(INamedTypeSymbol symbol)
+    {
+        var diagnostics = ImmutableArray.CreateBuilder<DiagnosticInfo>();
+        var model = ParseCore(symbol, diagnostics);
+        return new ParsedOrionId(model, new EquatableArray<DiagnosticInfo>(diagnostics.ToImmutable()));
+    }
+
+    /// <summary>
+    /// Legacy <see cref="Diagnostic"/>-based entry point retained for the analyzer surfaces
+    /// that still consume <see cref="Diagnostic"/> directly. Callers on the incremental
+    /// pipeline should prefer <see cref="Parse(INamedTypeSymbol)"/>.
+    /// </summary>
     public static bool TryParse(
         INamedTypeSymbol symbol,
         out OrionIdModel? model,
         out IReadOnlyList<Diagnostic> diagnostics)
     {
-        var diags = new List<Diagnostic>();
-        model = null;
-        diagnostics = diags;
+        var parsed = Parse(symbol);
+        model = parsed.Model;
+        var converted = new List<Diagnostic>(parsed.Diagnostics.Count);
+        foreach (var diag in parsed.Diagnostics)
+        {
+            converted.Add(diag.ToDiagnostic());
+        }
+        diagnostics = converted;
+        return model is not null;
+    }
 
+    private static OrionIdModel? ParseCore(INamedTypeSymbol symbol, ImmutableArray<DiagnosticInfo>.Builder diags)
+    {
         var attribute = FindOrionIdAttribute(symbol);
         if (attribute is null)
         {
-            return false;
+            return null;
         }
+
+        var location = symbol.Locations.Length > 0 ? symbol.Locations[0] : Location.None;
 
         if (!IsReadonlyPartialStruct(symbol))
         {
-            diags.Add(Diagnostic.Create(OrionKeyDiagnostics.NotReadonlyPartialStruct,
-                symbol.Locations[0], symbol.Name));
-            return false;
+            diags.Add(DiagnosticInfo.From(OrionKeyDiagnostics.NotReadonlyPartialStruct, location, symbol.Name));
+            return null;
         }
 
         var typeArgs = attribute.AttributeClass!.TypeArguments;
@@ -37,43 +65,40 @@ internal static class OrionIdParser
 
         if (!TryMapValueType(valueSymbol, out var valueType))
         {
-            diags.Add(Diagnostic.Create(OrionKeyDiagnostics.UnsupportedValueType,
-                symbol.Locations[0], valueSymbol.ToDisplayString()));
-            return false;
+            diags.Add(DiagnosticInfo.From(OrionKeyDiagnostics.UnsupportedValueType, location, valueSymbol.ToDisplayString()));
+            return null;
         }
 
         var strategy = StrategyType.None;
         if (strategySymbol is not null && !TryMapStrategy(strategySymbol, out strategy))
         {
-            diags.Add(Diagnostic.Create(OrionKeyDiagnostics.UnsupportedValueType,
-                symbol.Locations[0], strategySymbol.ToDisplayString()));
-            return false;
+            diags.Add(DiagnosticInfo.From(OrionKeyDiagnostics.UnsupportedValueType, location, strategySymbol.ToDisplayString()));
+            return null;
         }
 
         if (valueType == ValueType.String && strategy == StrategyType.None)
         {
-            diags.Add(Diagnostic.Create(OrionKeyDiagnostics.StringRequiresStrategy,
-                symbol.Locations[0], symbol.Name));
-            return false;
+            diags.Add(DiagnosticInfo.From(OrionKeyDiagnostics.StringRequiresStrategy, location, symbol.Name));
+            return null;
         }
 
         if (!IsCompatible(valueType, strategy))
         {
-            diags.Add(Diagnostic.Create(OrionKeyDiagnostics.IncompatibleStrategy,
-                symbol.Locations[0], strategy.ToString(), valueType.ToString()));
-            return false;
+            diags.Add(DiagnosticInfo.From(OrionKeyDiagnostics.IncompatibleStrategy, location, strategy.ToString(), valueType.ToString()));
+            return null;
         }
 
         var ns = symbol.ContainingNamespace.IsGlobalNamespace
             ? string.Empty
             : symbol.ContainingNamespace.ToDisplayString();
 
-        model = new OrionIdModel(symbol.Name, ns, valueType, strategy);
-        CheckMemberCollisions(symbol, model, diags);
-        return true;
+        var model = new OrionIdModel(symbol.Name, ns, valueType, strategy);
+        CheckMemberCollisions(symbol, model, diags, location);
+        return model;
     }
 
-    private static void CheckMemberCollisions(INamedTypeSymbol symbol, OrionIdModel model, List<Diagnostic> diags)
+    private static void CheckMemberCollisions(
+        INamedTypeSymbol symbol, OrionIdModel model, ImmutableArray<DiagnosticInfo>.Builder diags, Location location)
     {
         var emitted = new List<string> { "Value", "New", "Empty", "Equals", "GetHashCode", "ToString" };
         if (model.IsSortable)
@@ -84,8 +109,7 @@ internal static class OrionIdParser
         {
             if (!symbol.GetMembers(memberName).IsEmpty)
             {
-                diags.Add(Diagnostic.Create(OrionKeyDiagnostics.MemberCollision,
-                    symbol.Locations[0], symbol.Name, memberName));
+                diags.Add(DiagnosticInfo.From(OrionKeyDiagnostics.MemberCollision, location, symbol.Name, memberName));
             }
         }
     }
