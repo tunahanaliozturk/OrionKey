@@ -4,6 +4,29 @@ All notable changes to OrionKey are documented in this file. The format is based
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.15] - 2026-06-11
+
+### Added
+
+#### ORIONKEY011 method RETURN type code-fix
+
+Mirrors the v0.5.13 ORIONKEY010 code-fix for method return types. Rewrites the bare return type to a derived id name (`CreateUserId` Guid -> `UserId`) and emits a sibling `[OrionId<TValue>] public readonly partial struct` in the same namespace.
+
+- `BareIdMethodReturnCodeFixProvider` in `Moongazing.OrionKey.CodeFixes`.
+- Preserves `Task<T>` / `ValueTask<T>` async wrapper (`Task<Guid> CreateUserId()` -> `Task<UserId>`).
+- Preserves `Nullable<T>` annotation (`Guid?` -> `UserId?`).
+- Name derivation strips the leading verb chain: `TryGetUserId` -> `UserId`, `CreateOrderId` -> `OrderId`. Last two PascalCase segments win.
+- Reuses existing in-namespace id struct (no duplicate emit).
+- FixAll via `BatchFixer`.
+
+### Tests
+
+7 new facts.
+
+### Migration from v0.5.14
+
+Source-compatible.
+
 ## [0.5.14] - 2026-06-11
 
 ### Added
