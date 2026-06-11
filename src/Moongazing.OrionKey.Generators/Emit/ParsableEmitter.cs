@@ -63,11 +63,20 @@ internal static class ParsableEmitter
         // v0.5.21: ParseOrDefault helper. Returns null on null/empty/malformed input
         // instead of throwing. Useful when the caller is parsing user-supplied / query-
         // string input and would otherwise wrap every Parse call in try/catch.
-        sb.AppendLine($"    public static {name}? ParseOrDefault(string? s)");
-        sb.AppendLine("    {");
-        sb.AppendLine($"        if (string.IsNullOrEmpty(s)) return null;");
-        sb.AppendLine($"        return TryParse(s, null, out var r) ? r : null;");
-        sb.AppendLine("    }");
+        //
+        // ONLY emitted for primitive-backed types (Guid/int/long) because the
+        // generated string-backed TryParse accepts ANY non-null string - returning a
+        // 'parsed' StringId for arbitrary input like 'not-a-ulid' would defeat the
+        // 'null-on-malformed' contract. String-backed consumers should parse via
+        // their strategy's own validator before calling ctor / Parse.
+        if (model.ValueType != ValueType.String)
+        {
+            sb.AppendLine($"    public static {name}? ParseOrDefault(string? s)");
+            sb.AppendLine("    {");
+            sb.AppendLine($"        if (string.IsNullOrEmpty(s)) return null;");
+            sb.AppendLine($"        return TryParse(s, null, out var r) ? r : null;");
+            sb.AppendLine("    }");
+        }
         sb.AppendLine("}");
         return sb.ToString();
     }
