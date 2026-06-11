@@ -38,6 +38,17 @@ public sealed class RedundantOrionIdPropertyNameAnalyzer : DiagnosticAnalyzer
         {
             return;
         }
+        // Unwrap Nullable<UserId> -> UserId so optional self/foreign-key properties
+        // (`UserId? UserId`) also fire. Roslyn reports the property type as Nullable<UserId>
+        // with the OUTER name 'Nullable', so the name comparison below would miss without
+        // this unwrap.
+        if (typeSymbol.IsGenericType
+            && typeSymbol.ConstructedFrom.SpecialType == SpecialType.System_Nullable_T
+            && typeSymbol.TypeArguments.Length == 1
+            && typeSymbol.TypeArguments[0] is INamedTypeSymbol inner)
+        {
+            typeSymbol = inner;
+        }
         if (!string.Equals(property.Name, typeSymbol.Name, System.StringComparison.Ordinal))
         {
             return;
