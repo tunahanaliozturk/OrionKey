@@ -56,7 +56,13 @@ public sealed class BareIdMethodParameterCodeFixProvider : CodeFixProvider
             return;
         }
 
-        var existsInFile = root.DescendantNodes().OfType<StructDeclarationSyntax>()
+        // Scope the existing-id lookup to the parameter's own namespace so an id of the
+        // same name declared in a SIBLING namespace does not cause the fix to skip emit
+        // (and leave the rewritten parameter type unresolved in this namespace). Files
+        // with multiple block-scoped namespaces are the canonical broken case.
+        var parameterNamespace = parameter.Ancestors().OfType<BaseNamespaceDeclarationSyntax>().FirstOrDefault();
+        var scopeForLookup = (SyntaxNode?)parameterNamespace ?? root;
+        var existsInFile = scopeForLookup.DescendantNodes().OfType<StructDeclarationSyntax>()
             .Any(s => s.Identifier.ValueText == newIdName);
 
         context.RegisterCodeFix(
@@ -125,7 +131,15 @@ public sealed class BareIdMethodParameterCodeFixProvider : CodeFixProvider
             return document;
         }
 
-        var newType = SyntaxFactory.IdentifierName(newIdName).WithTriviaFrom(parameter.Type);
+        // Preserve nullable annotation: `Guid? userId` -> `UserId? userId`, not `UserId userId`.
+        // The analyzer unwraps Nullable<T> when matching, so the parameter contract (optional
+        // vs required) must survive the rewrite.
+        TypeSyntax newType = SyntaxFactory.IdentifierName(newIdName);
+        if (parameter.Type is NullableTypeSyntax)
+        {
+            newType = SyntaxFactory.NullableType(newType);
+        }
+        newType = newType.WithTriviaFrom(parameter.Type);
         var newParameter = parameter.WithType(newType);
         var rewritten = compilation.ReplaceNode(parameter, newParameter);
 
