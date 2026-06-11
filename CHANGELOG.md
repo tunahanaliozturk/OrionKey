@@ -4,6 +4,27 @@ All notable changes to OrionKey are documented in this file. The format is based
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.11] - 2026-06-11
+
+### Added
+
+#### ORIONKEY005 member-collision code-fix provider
+
+Sixth Phase D code-fix.
+
+- `MemberCollisionCodeFixProvider` in `Moongazing.OrionKey.CodeFixes`.
+- Scans the struct at the diagnostic location for `Value`, `New`, `Empty`, `Equals`, `GetHashCode`, `ToString`, `CompareTo` and offers one fix per actually-present collision.
+- Handles property, method, and field collisions.
+- FixAll via `BatchFixer`.
+
+### Tests
+
+6 new facts.
+
+### Migration from v0.5.10
+
+Source-compatible.
+
 ## [0.5.10] - 2026-06-11
 
 ### Added
