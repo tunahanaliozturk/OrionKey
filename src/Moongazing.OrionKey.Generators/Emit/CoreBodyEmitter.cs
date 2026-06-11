@@ -37,6 +37,18 @@ internal static class CoreBodyEmitter
 
         var emptyArg = model.ValueType == ValueType.String ? "string.Empty" : "default";
         sb.AppendLine($"    public static readonly {name} Empty = new({emptyArg});");
+        // v0.5.20: IsEmpty property for nullable-equivalence checks. Operators write
+        // `if (userId.IsEmpty) ...` instead of `if (userId == UserId.Empty)`.
+        // String-backed ids treat null Value as Empty (matches `Empty` ctor which uses
+        // string.Empty); primitive-backed ids compare with default(T).
+        if (model.ValueType == ValueType.String)
+        {
+            sb.AppendLine("    public bool IsEmpty => string.IsNullOrEmpty(Value);");
+        }
+        else
+        {
+            sb.AppendLine($"    public bool IsEmpty => Value.Equals(default({value}));");
+        }
 
         if (model.GeneratesNew)
         {

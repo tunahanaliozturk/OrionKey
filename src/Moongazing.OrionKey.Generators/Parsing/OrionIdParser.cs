@@ -116,7 +116,10 @@ internal static class OrionIdParser
     private static void CheckMemberCollisions(
         INamedTypeSymbol symbol, OrionIdModel model, ImmutableArray<DiagnosticInfo>.Builder diags, Location location)
     {
-        var emitted = new List<string> { "Value", "New", "Empty", "Equals", "GetHashCode", "ToString" };
+        // v0.5.20: IsEmpty added to the collision list because the generator emits it
+        // unconditionally and a consumer-declared IsEmpty would produce a duplicate
+        // member error post-generation.
+        var emitted = new List<string> { "Value", "New", "Empty", "IsEmpty", "Equals", "GetHashCode", "ToString" };
         if (model.IsSortable)
         {
             emitted.Add("CompareTo");

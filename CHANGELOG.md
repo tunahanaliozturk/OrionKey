@@ -4,6 +4,26 @@ All notable changes to OrionKey are documented in this file. The format is based
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.20] - 2026-06-11
+
+### Added
+
+#### `IsEmpty` property auto-emit
+
+Generator emits `public bool IsEmpty` on every OrionId struct so consumers can write `if (userId.IsEmpty) ...` instead of `if (userId == UserId.Empty)`.
+
+- String-backed ids: `string.IsNullOrEmpty(Value)` (treats null as empty too).
+- Primitive-backed ids: `Value.Equals(default(T))`.
+- ORIONKEY008 (member collision) now flags consumer-declared `IsEmpty` so the generated and consumer members do not collide silently.
+
+### Tests
+
+3 emit-snapshot facts.
+
+### Migration from v0.5.19
+
+Consumers with a hand-written `IsEmpty` member will now see ORIONKEY008; rename their member or remove it to inherit the generated one.
+
 ## [0.5.19] - 2026-06-11
 
 ### Added
