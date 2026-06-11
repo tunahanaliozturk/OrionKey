@@ -4,6 +4,26 @@ All notable changes to OrionKey are documented in this file. The format is based
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.21] - 2026-06-11
+
+### Added
+
+#### `ParseOrDefault(string?)` static helper
+
+Generator emits `public static {Name}? ParseOrDefault(string? s)` so consumers can write `var id = UserId.ParseOrDefault(query["id"])` without try/catch wrapping when parsing user / query-string input.
+
+- Returns null on null / empty string / malformed input.
+- Delegates to the existing public `TryParse(string?, IFormatProvider?, out)` overload.
+- ORIONKEY008 (member collision) now flags consumer-declared `ParseOrDefault`.
+
+### Tests
+
+2 emit-snapshot facts.
+
+### Migration from v0.5.20
+
+Consumers with a hand-written `ParseOrDefault` member will now see ORIONKEY008.
+
 ## [0.5.20] - 2026-06-11
 
 ### Added
