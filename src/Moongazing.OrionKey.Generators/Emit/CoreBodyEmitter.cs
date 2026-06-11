@@ -22,11 +22,14 @@ internal static class CoreBodyEmitter
         }
 
         // v0.5.18: emit DebuggerDisplay so debuggers show "UserId: <value>" instead of
-        // the default "{Demo.UserId}" which forces a struct expansion. The format uses
-        // the same toStr expression we use for ToString so string-backed and
-        // primitive-backed ids both render naturally.
-        var debuggerExpression = model.ValueType == ValueType.String ? "Value" : "Value";
-        sb.AppendLine($"[global::System.Diagnostics.DebuggerDisplay(\"{name}: {{{debuggerExpression}}}\")]");
+        // the default "{Demo.UserId}" which forces a struct expansion. Skip when the
+        // consumer's partial declaration already carries [DebuggerDisplay] because the
+        // attribute is not AllowMultiple = true and duplicating it would fail to
+        // compile.
+        if (!model.ConsumerHasDebuggerDisplay)
+        {
+            sb.AppendLine($"[global::System.Diagnostics.DebuggerDisplay(\"{name}: {{Value}}\")]");
+        }
         sb.AppendLine($"readonly partial struct {name} : global::System.IEquatable<{name}>, global::System.IFormattable, global::System.ISpanFormattable");
         sb.AppendLine("{");
         sb.AppendLine($"    public {value} Value {{ get; }}");

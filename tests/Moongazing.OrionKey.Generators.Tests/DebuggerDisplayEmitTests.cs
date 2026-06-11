@@ -33,6 +33,22 @@ public class DebuggerDisplayEmitTests
     }
 
     [Fact]
+    public void Generator_suppresses_emit_when_consumer_partial_already_declares_DebuggerDisplay()
+    {
+        // Consumer declares [DebuggerDisplay] on the partial - generator should NOT
+        // emit a second one (DebuggerDisplayAttribute is not AllowMultiple).
+        var output = Generate("""
+            using Moongazing.OrionKey;
+            namespace Demo;
+            [System.Diagnostics.DebuggerDisplay("custom")]
+            [OrionId<System.Guid>] public readonly partial struct UserId;
+            """);
+
+        Assert.DoesNotContain("[global::System.Diagnostics.DebuggerDisplay(\"UserId: {Value}\")]",
+            output, System.StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Long_backed_struct_emits_DebuggerDisplay_attribute()
     {
         var output = Generate("""
