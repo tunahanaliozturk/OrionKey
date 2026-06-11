@@ -4,6 +4,30 @@ All notable changes to OrionKey are documented in this file. The format is based
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.17] - 2026-06-11
+
+### Added
+
+#### ORIONKEY012 code-fix - rename redundant OrionId property
+
+Quick fix that renames the diagnosed property to the analyzer-suggested form:
+
+- Self-referential `OrderId OrderId` -> `OrderId Id`.
+- Foreign-key `UserId UserId` -> `UserId User`.
+
+The rename is declaration-only (the CodeFix harness restricts cross-document semantic renames). Consumers running the fix from Visual Studio / Rider get the full call-site cascade via the IDE's built-in rename refactoring; this fix is the safe-by-default declaration rename that compiles immediately when no external call sites reference the property.
+
+- `RedundantOrionIdPropertyNameCodeFixProvider` in `Moongazing.OrionKey.CodeFixes`.
+- FixAll via `BatchFixer`.
+
+### Tests
+
+3 facts.
+
+### Migration from v0.5.16
+
+Source-compatible.
+
 ## [0.5.16] - 2026-06-11
 
 ### Added
