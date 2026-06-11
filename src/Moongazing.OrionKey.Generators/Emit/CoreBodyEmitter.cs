@@ -53,6 +53,17 @@ internal static class CoreBodyEmitter
         if (model.GeneratesNew)
         {
             sb.AppendLine($"    public static {name} New() => new({NewExpression(model)});");
+            // v0.5.22: CreateMany helper for seed data and tests. Real ergonomic when
+            // a builder needs N fresh ids without a loop allocation at the call site:
+            // `var users = UserId.CreateMany(50);` reads better than `Enumerable.Range
+            // (0, 50).Select(_ => UserId.New()).ToArray()` and pre-allocates the array.
+            sb.AppendLine($"    public static {name}[] CreateMany(int count)");
+            sb.AppendLine("    {");
+            sb.AppendLine("        if (count < 0) throw new global::System.ArgumentOutOfRangeException(nameof(count));");
+            sb.AppendLine($"        var arr = new {name}[count];");
+            sb.AppendLine("        for (int i = 0; i < count; i++) arr[i] = New();");
+            sb.AppendLine("        return arr;");
+            sb.AppendLine("    }");
         }
 
         sb.AppendLine($"    public bool Equals({name} other) => Value.Equals(other.Value);");
