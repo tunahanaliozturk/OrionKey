@@ -7,6 +7,14 @@ internal sealed record OrionIdModel(
     ValueType ValueType,
     StrategyType Strategy)
 {
+    /// <summary>
+    /// v0.5.18 flag: true when the consumer's partial struct already declares
+    /// <c>[DebuggerDisplay]</c>. The generator skips the v0.5.18 auto-emit when set
+    /// because DebuggerDisplay is not AllowMultiple = true and the combined type
+    /// would fail compilation.
+    /// </summary>
+    public bool ConsumerHasDebuggerDisplay { get; init; }
+
     /// <summary>True when the struct should get a static <c>New()</c> factory.</summary>
     public bool GeneratesNew => Strategy != StrategyType.None || ValueType == ValueType.Guid;
 

@@ -92,9 +92,25 @@ internal static class OrionIdParser
             ? string.Empty
             : symbol.ContainingNamespace.ToDisplayString();
 
-        var model = new OrionIdModel(symbol.Name, ns, valueType, strategy);
+        var model = new OrionIdModel(symbol.Name, ns, valueType, strategy)
+        {
+            ConsumerHasDebuggerDisplay = HasConsumerDeclaredDebuggerDisplay(symbol),
+        };
         CheckMemberCollisions(symbol, model, diags, location);
         return model;
+    }
+
+    private static bool HasConsumerDeclaredDebuggerDisplay(INamedTypeSymbol symbol)
+    {
+        foreach (var attr in symbol.GetAttributes())
+        {
+            var name = attr.AttributeClass?.ToDisplayString();
+            if (name == "System.Diagnostics.DebuggerDisplayAttribute")
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static void CheckMemberCollisions(

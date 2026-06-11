@@ -4,6 +4,26 @@ All notable changes to OrionKey are documented in this file. The format is based
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.18] - 2026-06-11
+
+### Added
+
+#### `[DebuggerDisplay]` auto-emitted on every OrionId struct
+
+Debuggers and IDE watch panels now show `UserId: <value>` directly instead of the default `{Demo.UserId}` which forces an expand-to-see-Value click.
+
+- Emitted as `[global::System.Diagnostics.DebuggerDisplay("{Name}: {Value}")]` on the struct.
+- Guid/long/int/string-backed ids all render naturally via the `Value` member.
+- Pure addition to the generated struct; source-compatible with v0.5.17 consumers.
+
+### Tests
+
+3 emit-snapshot facts.
+
+### Migration from v0.5.17
+
+Source-compatible.
+
 ## [0.5.17] - 2026-06-11
 
 ### Added
