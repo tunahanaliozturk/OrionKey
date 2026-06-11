@@ -119,7 +119,21 @@ internal static class OrionIdParser
         // v0.5.20: IsEmpty added to the collision list because the generator emits it
         // unconditionally and a consumer-declared IsEmpty would produce a duplicate
         // member error post-generation.
-        var emitted = new List<string> { "Value", "New", "Empty", "IsEmpty", "ParseOrDefault", "Equals", "GetHashCode", "ToString" };
+        var emitted = new List<string> { "Value", "Empty", "IsEmpty", "Equals", "GetHashCode", "ToString" };
+        // v0.5.22 fix (codex P2): only gate New and CreateMany when the model actually
+        // emits them. External-id strategies ([OrionId<int>] without strategy) leave
+        // GeneratesNew=false and the emitter skips both factories - colliding on a
+        // consumer-declared CreateMany in that case is a false positive.
+        if (model.GeneratesNew)
+        {
+            emitted.Add("New");
+            emitted.Add("CreateMany");
+        }
+        // ParseOrDefault only emitted for primitive-backed (v0.5.21 fix).
+        if (model.ValueType != ValueType.String)
+        {
+            emitted.Add("ParseOrDefault");
+        }
         if (model.IsSortable)
         {
             emitted.Add("CompareTo");
