@@ -4,6 +4,28 @@ All notable changes to OrionKey are documented in this file. The format is based
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.16] - 2026-06-11
+
+### Added
+
+#### ORIONKEY012 - redundant OrionId property naming analyzer
+
+Flags entity properties whose name is identical to the OrionId type name (`UserId UserId`, `OrderId OrderId`). The property name does not add information beyond the type; renaming to the unprefixed form (`Id` for the entity own id, the navigation target name for foreign keys) keeps entity APIs readable.
+
+- New analyzer `RedundantOrionIdPropertyNameAnalyzer` (`Info` severity, enabled by default).
+- Self-referential redundancy (`Order.OrderId` typed `OrderId`) -> suggest `Id`.
+- Foreign-key redundancy (`Order.UserId` typed `UserId`) -> suggest the navigation target name (`User`).
+- Bare primitives are out of scope; only OrionId-typed properties fire.
+- Tune via `.editorconfig` if your area follows a different convention.
+
+### Tests
+
+4 new facts.
+
+### Migration from v0.5.15
+
+Source-compatible.
+
 ## [0.5.15] - 2026-06-11
 
 ### Added
