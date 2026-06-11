@@ -4,6 +4,28 @@ All notable changes to OrionKey are documented in this file. The format is based
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.14] - 2026-06-11
+
+### Added
+
+#### ORIONKEY011 - bare id method RETURN type analyzer
+
+Mirror of ORIONKEY010 for method return types. Methods like `Guid CreateUserId()` or `long GetOrderId(...)` return ids by contract but lose type safety once the return value is assigned to a bare local. Promoting the return type to a strongly-typed id keeps the mix-up protection across method boundaries.
+
+- New analyzer `BareIdMethodReturnAnalyzer` (`Info` severity, enabled by default).
+- Fires when method name implies an id (exact `Id` or `*Id` PascalCase suffix) AND return type is bare `Guid` / `long` / `int` / `string`.
+- Unwraps `Nullable<T>` AND `Task<T>` / `ValueTask<T>` so async methods returning `Task<Guid> CreateUserId()` also fire.
+- Skips constructors, operator overloads, accessors, compiler-generated methods, and delegate invokes.
+- "Identify" / "Provider" / "Hide" do NOT fire - the suffix check excludes mid-name "Id" substrings.
+
+### Tests
+
+7 new facts.
+
+### Migration from v0.5.13
+
+Source-compatible.
+
 ## [0.5.13] - 2026-06-11
 
 ### Added
