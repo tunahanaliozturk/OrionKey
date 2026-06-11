@@ -110,6 +110,24 @@ public class BareIdMethodParameterAnalyzerTests
     }
 
     [Fact]
+    public void Flags_nullable_value_type_id_parameter()
+    {
+        var source = """
+            namespace Demo;
+            public class Service
+            {
+                public void GetUser(System.Guid? userId) { }
+            }
+            """;
+
+        var diagnostics = Analyze(source);
+
+        // Nullable<T> wrappers should be unwrapped so the analyzer sees the underlying
+        // Guid and fires - matches the v0.5.9 ORIONKEY008 nullable-handling.
+        Assert.Single(diagnostics);
+    }
+
+    [Fact]
     public void Flags_every_bare_id_parameter_in_a_signature()
     {
         var source = """

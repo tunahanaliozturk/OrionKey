@@ -68,6 +68,14 @@ public sealed class BareIdMethodParameterAnalyzer : DiagnosticAnalyzer
     private static bool IsBarePrimitiveType(ITypeSymbol type, out string clrTypeName)
     {
         clrTypeName = string.Empty;
+        // Unwrap Nullable<T> so `Guid? userId` / `long? orderId` also fire (matches the
+        // v0.5.9 ORIONKEY008 behaviour).
+        if (type is INamedTypeSymbol named && named.IsGenericType
+            && named.ConstructedFrom.SpecialType == SpecialType.System_Nullable_T
+            && named.TypeArguments.Length == 1)
+        {
+            type = named.TypeArguments[0];
+        }
         switch (type.SpecialType)
         {
             case SpecialType.System_Int64:

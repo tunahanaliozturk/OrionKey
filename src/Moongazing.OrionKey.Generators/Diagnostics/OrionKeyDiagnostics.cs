@@ -53,7 +53,7 @@ internal static class OrionKeyDiagnostics
         customTags: new[] { WellKnownDiagnosticTags.CompilationEnd });
 
     public static readonly DiagnosticDescriptor BareIdMethodParameterShouldBePromoted = new(
-        "ORIONKEY010", "Bare Guid/long method parameter named Id or *Id could be promoted to a strongly-typed id",
+        "ORIONKEY010", "Bare Guid/long/int/string method parameter named Id or *Id could be promoted to a strongly-typed id",
         "Parameter '{0}.{1}' has CLR type '{2}' and name '{1}'; consider replacing it with an [OrionId] " +
         "strongly-typed id so callers cannot mix it up with another id in the same method signature",
         Category, DiagnosticSeverity.Info, isEnabledByDefault: true,
