@@ -35,6 +35,13 @@ internal static class NewtonsoftJsonConverterEmitter
             sb.AppendLine($"namespace {model.Namespace};");
             sb.AppendLine();
         }
+        // v0.5.19: emit [JsonConverter] on a separate partial declaration of the
+        // struct so Newtonsoft.Json picks the converter up automatically without the
+        // consumer having to call settings.Converters.Add(...). Matches the
+        // System.Text.Json side's pattern.
+        sb.AppendLine($"[global::Newtonsoft.Json.JsonConverter(typeof({converter}))]");
+        sb.AppendLine($"readonly partial struct {name} {{ }}");
+        sb.AppendLine();
         sb.AppendLine($"/// <summary>Newtonsoft.Json converter for <see cref=\"{name}\"/>.</summary>");
         sb.AppendLine($"public sealed class {converter} "
                     + $": global::Newtonsoft.Json.JsonConverter<{name}>");
