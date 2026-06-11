@@ -22,15 +22,19 @@ public class ParseOrDefaultEmitTests
     }
 
     [Fact]
-    public void String_backed_struct_emits_ParseOrDefault()
+    public void String_backed_struct_does_NOT_emit_ParseOrDefault()
     {
+        // v0.5.21 codex P2 fix: string-backed strategies inherit the generated
+        // TryParse(string) that returns true for ANY non-null input. Emitting
+        // ParseOrDefault would silently accept malformed input like 'not-a-ulid' and
+        // violate the null-on-malformed contract. Suppression is intentional.
         var output = Generate("""
             using Moongazing.OrionKey;
             namespace Demo;
             [OrionId<string, Ulid>] public readonly partial struct TenantId;
             """);
 
-        Assert.Contains("public static TenantId? ParseOrDefault(string? s)",
+        Assert.DoesNotContain("ParseOrDefault",
             output, System.StringComparison.Ordinal);
     }
 }
