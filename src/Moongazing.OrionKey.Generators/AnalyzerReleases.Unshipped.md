@@ -14,3 +14,4 @@ ORIONKEY006 | OrionKey | Warning | OrionId entity key has no EF Core HasConversi
 ORIONKEY007 | OrionKey | Info | OrionId struct is declared but never referenced
 ORIONKEY008 | OrionKey | Info | Bare Guid/long property named Id or *Id could be promoted to a strongly-typed id
 ORIONKEY010 | OrionKey | Info | Bare Guid/long method parameter named Id or *Id could be promoted to a strongly-typed id
+ORIONKEY011 | OrionKey | Info | Bare Guid/long/int/string method return type whose name implies an id could be promoted
