@@ -52,6 +52,18 @@ internal static class OrionKeyDiagnostics
         "Either reference the id from an entity, DTO, or parameter, or remove the declaration.",
         customTags: new[] { WellKnownDiagnosticTags.CompilationEnd });
 
+    public static readonly DiagnosticDescriptor RedundantOrionIdPropertyName = new(
+        "ORIONKEY012", "OrionId property name redundantly repeats the id type",
+        "Property '{0}.{1}' is typed as '{2}' and named '{1}'; the property name redundantly repeats the id type. " +
+        "Rename to '{3}' to keep entity APIs clean ('order.OrderId' reads as a redundancy that 'order.Id' does not).",
+        Category, DiagnosticSeverity.Info, isEnabledByDefault: true,
+        description: "OrionId property names like `UserId UserId` or `OrderId OrderId` are tautological - " +
+        "the property name does not add information beyond the type. Renaming to the unprefixed form " +
+        "(typically `Id` for the entity's own id, or the navigation target name for foreign keys) keeps " +
+        "entity APIs readable. The renamed form composes better with EF Core's HasKey(x => x.Id) and the " +
+        "v0.5.10 HasOrionKeyConversion auto-emit. Tune via .editorconfig if your area follows a different " +
+        "naming convention.");
+
     public static readonly DiagnosticDescriptor BareIdMethodReturnShouldBePromoted = new(
         "ORIONKEY011", "Bare Guid/long/int/string method return type whose name implies an id could be promoted",
         "Method '{0}.{1}' returns CLR type '{2}' and its name implies an id ('{1}'); consider returning an " +
