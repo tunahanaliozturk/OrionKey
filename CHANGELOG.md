@@ -4,6 +4,25 @@ All notable changes to OrionKey are documented in this file. The format is based
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.22] - 2026-06-11
+
+### Added
+
+#### Generator emits `static {Name}[] CreateMany(int count)` factory
+
+For every OrionId struct with a `New()` factory (Guid + strategy-backed types), the generator now also emits a `CreateMany(int)` helper that produces a pre-allocated array of fresh ids.
+
+- Throws `ArgumentOutOfRangeException` on negative count.
+- ORIONKEY008 collision list updated to include `CreateMany`.
+
+### Tests
+
+3 emit-snapshot facts.
+
+### Migration from v0.5.21
+
+Source-compatible (consumer-declared `CreateMany` triggers ORIONKEY008).
+
 ## [0.5.21] - 2026-06-11
 
 ### Added
