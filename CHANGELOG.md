@@ -4,6 +4,26 @@ All notable changes to OrionKey are documented in this file. The format is based
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.11] - 2026-06-11
+
+### Added
+
+#### `IFormattable` + `ISpanFormattable` emitted on every OrionId struct
+
+The v0.5.x emitter implemented `IEquatable<T>` + an opaque `ToString()` override but did not participate in format-aware interpolations. v0.5.11 adds both `IFormattable` and `ISpanFormattable` to the generated struct surface so `$"{userId:N}"` on a Guid-backed id forwards to `Guid.ToString("N", ...)` and span-formatted writes (logging, allocation-free output) work without a string allocation.
+
+- Numeric/Guid value types delegate `ToString(format, provider)` AND `TryFormat(destination, ...)` to the underlying value's matching members.
+- String value types ignore the format specifier (string has no format semantics); `TryFormat` copies the underlying string into the destination span with bounds-check.
+- Pure additions to the generated struct - source-compatible: a struct that consumed the v0.5.10 emit continues to compile, but now also satisfies the two interfaces.
+
+### Tests
+
+4 new emit-snapshot facts.
+
+### Migration from v0.5.10
+
+Source-compatible.
+
 ## [0.5.10] - 2026-06-11
 
 ### Added
