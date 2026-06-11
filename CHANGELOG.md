@@ -4,6 +4,25 @@ All notable changes to OrionKey are documented in this file. The format is based
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.19] - 2026-06-11
+
+### Added
+
+#### Newtonsoft.Json `[JsonConverter]` attribute auto-emit
+
+The System.Text.Json converter emitter already emits `[JsonConverter(typeof(XxxJsonConverter))]` on a separate partial declaration. v0.5.19 mirrors that on the Newtonsoft.Json side so consumers no longer need `settings.Converters.Add(new XxxNewtonsoftJsonConverter())`.
+
+- Only emits when `Newtonsoft.Json` is referenced.
+- Pure addition.
+
+### Tests
+
+2 facts.
+
+### Migration from v0.5.18
+
+Source-compatible.
+
 ## [0.5.18] - 2026-06-11
 
 ### Added
