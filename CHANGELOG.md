@@ -4,6 +4,28 @@ All notable changes to OrionKey are documented in this file. The format is based
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.13] - 2026-06-11
+
+### Added
+
+#### ORIONKEY010 method parameter code-fix
+
+Mirrors v0.5.9 `BareIdPromotionCodeFixProvider` (ORIONKEY008) for method parameters: rewrites the bare parameter type to a derived id name (`userId` Guid -> `UserId`) and emits a sibling `[OrionId<TValue>] public readonly partial struct` in the same namespace so the next build picks up the generated converter.
+
+- `BareIdMethodParameterCodeFixProvider` in `Moongazing.OrionKey.CodeFixes`.
+- Handles Guid / long / int (no strategy) and string (Ulid strategy by default, matching v0.5.7+).
+- Unwraps `Nullable<T>` so `Guid? userId` also fixes.
+- Reuses an existing in-file id struct when present (no duplicate emit).
+- FixAll via `BatchFixer`.
+
+### Tests
+
+5 new facts.
+
+### Migration from v0.5.12
+
+Source-compatible.
+
 ## [0.5.12] - 2026-06-11
 
 ### Added
