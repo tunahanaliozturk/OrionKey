@@ -60,6 +60,14 @@ internal static class ParsableEmitter
                     + $"out {name} result) {{ {tryBody} }}");
         sb.AppendLine($"    public static bool TryParse("
                     + $"string? s, out {name} result) => TryParse(s, null, out result);");
+        // v0.5.21: ParseOrDefault helper. Returns null on null/empty/malformed input
+        // instead of throwing. Useful when the caller is parsing user-supplied / query-
+        // string input and would otherwise wrap every Parse call in try/catch.
+        sb.AppendLine($"    public static {name}? ParseOrDefault(string? s)");
+        sb.AppendLine("    {");
+        sb.AppendLine($"        if (string.IsNullOrEmpty(s)) return null;");
+        sb.AppendLine($"        return TryParse(s, null, out var r) ? r : null;");
+        sb.AppendLine("    }");
         sb.AppendLine("}");
         return sb.ToString();
     }
