@@ -4,6 +4,27 @@ All notable changes to OrionKey are documented in this file. The format is based
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.12] - 2026-06-11
+
+### Added
+
+#### ORIONKEY010 - bare id method parameter analyzer
+
+Extends ORIONKEY008 (which catches property declarations) to method parameter declarations. A signature like `GetUser(Guid userId, Guid orderId)` is a prime target for mix-up bugs at the call site; promoting both parameters to strongly-typed ids turns the argument-order mistake into a compile-time error.
+
+- New analyzer `BareIdMethodParameterAnalyzer` (`Info` severity, enabled by default).
+- Fires per parameter that matches the v0.5.x bare-id convention (name `Id` / `*Id` / `*ID`, CLR type `Guid` / `long` / `int` / `string`).
+- Skips compiler-generated methods (delegate Invoke, lambdas) and user-defined operators.
+- Diagnostic location is the parameter declaration so the IDE squiggle lands precisely.
+
+### Tests
+
+6 new facts.
+
+### Migration from v0.5.11
+
+Source-compatible.
+
 ## [0.5.11] - 2026-06-11
 
 ### Added
