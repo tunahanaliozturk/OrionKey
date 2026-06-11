@@ -8,18 +8,17 @@ All notable changes to OrionKey are documented in this file. The format is based
 
 ### Added
 
-#### ORIONKEY005 member-collision code-fix provider
+#### `IFormattable` + `ISpanFormattable` emitted on every OrionId struct
 
-Sixth Phase D code-fix.
+The v0.5.x emitter implemented `IEquatable<T>` + an opaque `ToString()` override but did not participate in format-aware interpolations. v0.5.11 adds both `IFormattable` and `ISpanFormattable` to the generated struct surface so `$"{userId:N}"` on a Guid-backed id forwards to `Guid.ToString("N", ...)` and span-formatted writes (logging, allocation-free output) work without a string allocation.
 
-- `MemberCollisionCodeFixProvider` in `Moongazing.OrionKey.CodeFixes`.
-- Scans the struct at the diagnostic location for `Value`, `New`, `Empty`, `Equals`, `GetHashCode`, `ToString`, `CompareTo` and offers one fix per actually-present collision.
-- Handles property, method, and field collisions.
-- FixAll via `BatchFixer`.
+- Numeric/Guid value types delegate `ToString(format, provider)` AND `TryFormat(destination, ...)` to the underlying value's matching members.
+- String value types ignore the format specifier (string has no format semantics); `TryFormat` copies the underlying string into the destination span with bounds-check.
+- Pure additions to the generated struct - source-compatible: a struct that consumed the v0.5.10 emit continues to compile, but now also satisfies the two interfaces.
 
 ### Tests
 
-6 new facts.
+4 new emit-snapshot facts.
 
 ### Migration from v0.5.10
 

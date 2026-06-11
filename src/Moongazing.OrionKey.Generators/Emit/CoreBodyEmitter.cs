@@ -21,7 +21,7 @@ internal static class CoreBodyEmitter
             sb.AppendLine();
         }
 
-        sb.AppendLine($"readonly partial struct {name} : global::System.IEquatable<{name}>");
+        sb.AppendLine($"readonly partial struct {name} : global::System.IEquatable<{name}>, global::System.IFormattable, global::System.ISpanFormattable");
         sb.AppendLine("{");
         sb.AppendLine($"    public {value} Value {{ get; }}");
         sb.AppendLine($"    public {name}({value} value) => Value = value;");
@@ -40,6 +40,31 @@ internal static class CoreBodyEmitter
 
         var toStr = model.ValueType == ValueType.String ? "Value" : "Value.ToString()";
         sb.AppendLine($"    public override string ToString() => {toStr};");
+
+        // v0.5.11: IFormattable + ISpanFormattable so OrionId structs participate in
+        // format-aware interpolations (e.g. $"{userId:N}" on a Guid-backed id forwards
+        // to Guid's N format). String-backed ids ignore the format specifier - the
+        // underlying string has no format semantics.
+        if (model.ValueType == ValueType.String)
+        {
+            sb.AppendLine($"    public string ToString(string? format, global::System.IFormatProvider? formatProvider) => Value ?? string.Empty;");
+            sb.AppendLine($"    public bool TryFormat(global::System.Span<char> destination, out int charsWritten, global::System.ReadOnlySpan<char> format, global::System.IFormatProvider? provider)");
+            sb.AppendLine("    {");
+            sb.AppendLine("        var source = Value ?? string.Empty;");
+            sb.AppendLine("        if (source.Length > destination.Length) { charsWritten = 0; return false; }");
+            sb.AppendLine("        source.AsSpan().CopyTo(destination);");
+            sb.AppendLine("        charsWritten = source.Length;");
+            sb.AppendLine("        return true;");
+            sb.AppendLine("    }");
+        }
+        else
+        {
+            sb.AppendLine($"    public string ToString(string? format, global::System.IFormatProvider? formatProvider) => Value.ToString(format, formatProvider);");
+            sb.AppendLine($"    public bool TryFormat(global::System.Span<char> destination, out int charsWritten, global::System.ReadOnlySpan<char> format, global::System.IFormatProvider? provider)");
+            sb.AppendLine("    {");
+            sb.AppendLine($"        return ((global::System.ISpanFormattable)Value).TryFormat(destination, out charsWritten, format, provider);");
+            sb.AppendLine("    }");
+        }
 
         sb.AppendLine($"    public static bool operator ==({name} left, {name} right) => left.Equals(right);");
         sb.AppendLine($"    public static bool operator !=({name} left, {name} right) => !left.Equals(right);");
