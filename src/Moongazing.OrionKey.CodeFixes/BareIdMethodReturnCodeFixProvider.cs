@@ -206,13 +206,22 @@ public sealed class BareIdMethodReturnCodeFixProvider : CodeFixProvider
         TypeSyntax newReturnType;
         if (hadAsync is not null)
         {
-            // Wrap back in Task<T> / ValueTask<T>. Preserve the simple-name shape used by
-            // the original (Task vs ValueTask).
-            var asyncIdentifier = (raw as GenericNameSyntax)?.Identifier.ValueText
-                ?? ((raw as QualifiedNameSyntax)?.Right as GenericNameSyntax)?.Identifier.ValueText
-                ?? "Task";
-            newReturnType = SyntaxFactory.GenericName(SyntaxFactory.Identifier(asyncIdentifier))
-                .WithTypeArgumentList(SyntaxFactory.TypeArgumentList(SyntaxFactory.SingletonSeparatedList(newInner)));
+            // Wrap back in Task<T> / ValueTask<T>. Preserve the QUALIFIED-vs-bare form of
+            // the original so a method declared with fully qualified
+            // `System.Threading.Tasks.Task<Guid>` stays qualified after the rewrite. A
+            // bare-name original (e.g. `Task<Guid>`) is reproduced bare.
+            var newTypeArgList = SyntaxFactory.TypeArgumentList(SyntaxFactory.SingletonSeparatedList(newInner));
+            if (raw is QualifiedNameSyntax qualified && qualified.Right is GenericNameSyntax qgeneric)
+            {
+                var newRight = SyntaxFactory.GenericName(qgeneric.Identifier).WithTypeArgumentList(newTypeArgList);
+                newReturnType = SyntaxFactory.QualifiedName(qualified.Left, newRight);
+            }
+            else
+            {
+                var asyncIdentifier = (raw as GenericNameSyntax)?.Identifier.ValueText ?? "Task";
+                newReturnType = SyntaxFactory.GenericName(SyntaxFactory.Identifier(asyncIdentifier))
+                    .WithTypeArgumentList(newTypeArgList);
+            }
         }
         else
         {
@@ -228,9 +237,15 @@ public sealed class BareIdMethodReturnCodeFixProvider : CodeFixProvider
             return document.WithSyntaxRoot(rewritten);
         }
 
+        // Fully-qualify Guid in the emitted attribute. The original file may not have a
+        // `using System;` directive (the analyzer matches `System.Guid` qualified usage
+        // too), so an unqualified `Guid` in the attribute would fail to compile even
+        // when the original code parsed cleanly. Predefined keywords (long/int/string)
+        // need no qualification.
+        var qualifiedValueType = valueTypeKeyword == "Guid" ? "global::System.Guid" : valueTypeKeyword;
         var attributeText = requiresStrategy
-            ? $"[global::Moongazing.OrionKey.OrionId<{valueTypeKeyword}, global::Moongazing.OrionKey.Ulid>]"
-            : $"[global::Moongazing.OrionKey.OrionId<{valueTypeKeyword}>]";
+            ? $"[global::Moongazing.OrionKey.OrionId<{qualifiedValueType}, global::Moongazing.OrionKey.Ulid>]"
+            : $"[global::Moongazing.OrionKey.OrionId<{qualifiedValueType}>]";
         var structText = $"\n{attributeText}\npublic readonly partial struct {newIdName};\n";
         var newMember = SyntaxFactory.ParseMemberDeclaration(structText);
         if (newMember is null)
