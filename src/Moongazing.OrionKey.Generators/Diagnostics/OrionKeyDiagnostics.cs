@@ -52,6 +52,17 @@ internal static class OrionKeyDiagnostics
         "Either reference the id from an entity, DTO, or parameter, or remove the declaration.",
         customTags: new[] { WellKnownDiagnosticTags.CompilationEnd });
 
+    public static readonly DiagnosticDescriptor BareIdMethodReturnShouldBePromoted = new(
+        "ORIONKEY011", "Bare Guid/long/int/string method return type whose name implies an id could be promoted",
+        "Method '{0}.{1}' returns CLR type '{2}' and its name implies an id ('{1}'); consider returning an " +
+        "[OrionId] strongly-typed id so callers cannot mix it up with another id from a sibling method",
+        Category, DiagnosticSeverity.Info, isEnabledByDefault: true,
+        description: "Mirrors ORIONKEY010 for method return types. Methods like 'Guid CreateUser()' " +
+        "or 'long GetOrderId(...)' return ids by contract but lose type safety once the return value " +
+        "is assigned to a bare local. Promoting the return type to a strongly-typed id keeps the " +
+        "mix-up protection across method boundaries. Tune via .editorconfig if your API surface " +
+        "should stay on primitives.");
+
     public static readonly DiagnosticDescriptor BareIdMethodParameterShouldBePromoted = new(
         "ORIONKEY010", "Bare Guid/long/int/string method parameter named Id or *Id could be promoted to a strongly-typed id",
         "Parameter '{0}.{1}' has CLR type '{2}' and name '{1}'; consider replacing it with an [OrionId] " +
