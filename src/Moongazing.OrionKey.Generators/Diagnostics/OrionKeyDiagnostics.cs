@@ -52,6 +52,17 @@ internal static class OrionKeyDiagnostics
         "Either reference the id from an entity, DTO, or parameter, or remove the declaration.",
         customTags: new[] { WellKnownDiagnosticTags.CompilationEnd });
 
+    public static readonly DiagnosticDescriptor BareIdMethodParameterShouldBePromoted = new(
+        "ORIONKEY010", "Bare Guid/long/int/string method parameter named Id or *Id could be promoted to a strongly-typed id",
+        "Parameter '{0}.{1}' has CLR type '{2}' and name '{1}'; consider replacing it with an [OrionId] " +
+        "strongly-typed id so callers cannot mix it up with another id in the same method signature",
+        Category, DiagnosticSeverity.Info, isEnabledByDefault: true,
+        description: "Extends ORIONKEY008 (which catches property declarations) to method parameter " +
+        "declarations. A method signature like 'GetUser(Guid userId, Guid orderId)' is a prime target " +
+        "for mix-up bugs at the call site; promoting both parameters to strongly-typed ids turns the " +
+        "argument-order mistake into a compile-time error. Tune via .editorconfig if you have a legacy " +
+        "API surface that should stay on primitives.");
+
     public static readonly DiagnosticDescriptor BareIdShouldBePromoted = new(
         "ORIONKEY008", "Bare Guid/long property named Id or *Id could be promoted to a strongly-typed id",
         "Property '{0}.{1}' has CLR type '{2}' and name '{1}'; consider replacing it with an [OrionId] " +
