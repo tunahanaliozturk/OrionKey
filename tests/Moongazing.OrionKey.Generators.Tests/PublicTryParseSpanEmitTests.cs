@@ -32,8 +32,12 @@ public class PublicTryParseSpanEmitTests
             [OrionId<long, Snowflake>] public readonly partial struct AccountId;
             """);
 
+        // v0.5.23 coderabbit minor: lock BOTH arities for long-backed ids too.
         Assert.Contains(
             "public static bool TryParse(global::System.ReadOnlySpan<char> s, global::System.IFormatProvider? provider, out AccountId result)",
+            output, System.StringComparison.Ordinal);
+        Assert.Contains(
+            "public static bool TryParse(global::System.ReadOnlySpan<char> s, out AccountId result) => TryParse(s, null, out result);",
             output, System.StringComparison.Ordinal);
     }
 }
