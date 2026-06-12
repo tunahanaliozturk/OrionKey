@@ -4,6 +4,24 @@ All notable changes to OrionKey are documented in this file. The format is based
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.23] - 2026-06-12
+
+### Added
+
+#### Public `TryParse(ReadOnlySpan<char>, ...)` overloads
+
+Generator now emits public `static bool TryParse(ReadOnlySpan<char>, IFormatProvider?, out {Name})` and `(ReadOnlySpan<char>, out {Name})` overloads alongside the existing `string` overloads.
+
+Hot HTTP routing paths (Minimal API parameter binding, custom path extractors) can now parse OrionIds without round-tripping through a `string` allocation. The existing explicit `ISpanParsable<T>.TryParse` covered the framework binding surface; this public overload covers the consumer-code surface so call sites do not have to cast to the interface.
+
+### Tests
+
+2 emit-snapshot facts.
+
+### Migration from v0.5.22
+
+Source-compatible.
+
 ## [0.5.22] - 2026-06-11
 
 ### Added
