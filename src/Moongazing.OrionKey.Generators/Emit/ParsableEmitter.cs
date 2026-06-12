@@ -60,6 +60,15 @@ internal static class ParsableEmitter
                     + $"out {name} result) {{ {tryBody} }}");
         sb.AppendLine($"    public static bool TryParse("
                     + $"string? s, out {name} result) => TryParse(s, null, out result);");
+        // v0.5.23: public ReadOnlySpan<char> overloads so hot HTTP routing paths can
+        // bind without round-tripping through a string allocation. The existing
+        // explicit ISpanParsable<T>.TryParse covers the framework binding surface; this
+        // public overload covers the consumer-code surface.
+        sb.AppendLine($"    public static bool TryParse("
+                    + $"global::System.ReadOnlySpan<char> s, global::System.IFormatProvider? provider, "
+                    + $"out {name} result) {{ {TrySpanBody(model)} }}");
+        sb.AppendLine($"    public static bool TryParse("
+                    + $"global::System.ReadOnlySpan<char> s, out {name} result) => TryParse(s, null, out result);");
         // v0.5.21: ParseOrDefault helper. Returns null on null/empty/malformed input
         // instead of throwing. Useful when the caller is parsing user-supplied / query-
         // string input and would otherwise wrap every Parse call in try/catch.
