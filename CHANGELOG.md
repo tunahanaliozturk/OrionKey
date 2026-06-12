@@ -4,6 +4,33 @@ All notable changes to OrionKey are documented in this file. The format is based
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.24] - 2026-06-12
+
+### Added
+
+#### Generator emits `static IReadOnlyList<{Name}> WrapAll(IEnumerable<TValue>)`
+
+Bulk wrap helper for converting collections of raw values to id collections without LINQ boilerplate at every call site:
+
+```csharp
+var ids = UserId.WrapAll(rowGuids);  // v0.5.24
+// vs the verbose alternative:
+var ids = rowGuids.Select(g => new UserId(g)).ToList();
+```
+
+- Pre-allocates capacity when the input implements `ICollection<TValue>`.
+- Throws `ArgumentNullException` on null input.
+- Emitted for ALL value types (Guid, int, long, string).
+- ORIONKEY008 collision list updated to include `WrapAll`.
+
+### Tests
+
+4 emit-snapshot facts.
+
+### Migration from v0.5.23
+
+Source-compatible (consumer-declared `WrapAll` triggers ORIONKEY008).
+
 ## [0.5.23] - 2026-06-12
 
 ### Added

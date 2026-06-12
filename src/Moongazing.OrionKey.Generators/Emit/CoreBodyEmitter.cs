@@ -65,6 +65,19 @@ internal static class CoreBodyEmitter
             sb.AppendLine("        return arr;");
             sb.AppendLine("    }");
         }
+        // v0.5.24: bulk wrap helper for converting collections of raw values to id
+        // collections without LINQ boilerplate at every call site. Emitted for ALL
+        // value types (Guid/int/long/string) because it works the same way - the
+        // constructor accepts the underlying value.
+        sb.AppendLine($"    public static global::System.Collections.Generic.IReadOnlyList<{name}> WrapAll(global::System.Collections.Generic.IEnumerable<{value}> values)");
+        sb.AppendLine("    {");
+        sb.AppendLine("        global::System.ArgumentNullException.ThrowIfNull(values);");
+        sb.AppendLine($"        var list = values is global::System.Collections.Generic.ICollection<{value}> c");
+        sb.AppendLine($"            ? new global::System.Collections.Generic.List<{name}>(c.Count)");
+        sb.AppendLine($"            : new global::System.Collections.Generic.List<{name}>();");
+        sb.AppendLine("        foreach (var v in values) list.Add(new(v));");
+        sb.AppendLine("        return list;");
+        sb.AppendLine("    }");
 
         sb.AppendLine($"    public bool Equals({name} other) => Value.Equals(other.Value);");
         sb.AppendLine($"    public override bool Equals(object? obj) => obj is {name} other && Equals(other);");
