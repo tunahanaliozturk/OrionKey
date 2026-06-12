@@ -4,6 +4,32 @@ All notable changes to OrionKey are documented in this file. The format is based
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.25] - 2026-06-12
+
+### Added
+
+#### Generator emits `static IReadOnlyList<TValue> UnwrapAll(IEnumerable<{Name}>)`
+
+Inverse of v0.5.24 `WrapAll` - bulk unwrap for handing raw values to EF Core `Contains()` queries, Dapper `IN` clauses, or external APIs that take the underlying type:
+
+```csharp
+var guids = UserId.UnwrapAll(selectedIds);
+await db.Users.Where(u => guids.Contains(u.Id)).ToListAsync();
+```
+
+- Same `ICollection<T>` capacity pre-allocation as `WrapAll`.
+- Throws `ArgumentNullException` on null input.
+- Emitted for ALL value types.
+- ORIONKEY008 collision list updated to include `UnwrapAll`.
+
+### Tests
+
+3 emit-snapshot facts.
+
+### Migration from v0.5.24
+
+Source-compatible (consumer-declared `UnwrapAll` triggers ORIONKEY008).
+
 ## [0.5.24] - 2026-06-12
 
 ### Added
