@@ -134,10 +134,19 @@ internal static class OrionIdParser
         {
             emitted.Add("ParseOrDefault");
         }
-        if (model.IsSortable)
-        {
-            emitted.Add("CompareTo");
-        }
+        // v0.5.26: CompareTo is now emitted for ALL id types (was sortable-only), so it
+        // is unconditionally on the collision list.
+        emitted.Add("CompareTo");
+        // v0.5.26 fix (codex P2): the ordering OPERATORS (< <= > >=) are now also emitted
+        // for every id type by ComparableEmitter. A consumer that hand-declared any of
+        // them on a previously-non-comparable id would get a raw duplicate-operator
+        // compile error with no ORIONKEY008 guidance. Operator members surface in the
+        // symbol table as op_LessThan / op_LessThanOrEqual / op_GreaterThan /
+        // op_GreaterThanOrEqual, so add those to the collision scan.
+        emitted.Add("op_LessThan");
+        emitted.Add("op_LessThanOrEqual");
+        emitted.Add("op_GreaterThan");
+        emitted.Add("op_GreaterThanOrEqual");
         foreach (var memberName in emitted)
         {
             if (!symbol.GetMembers(memberName).IsEmpty)

@@ -4,6 +4,25 @@ All notable changes to OrionKey are documented in this file. The format is based
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.26] - 2026-06-13
+
+### Changed
+
+#### `IComparable` now emitted for EVERY id type
+
+Previously only time-ordered strategies (Snowflake, ULID, KSUID, ObjectId, GuidV7, SequentialGuid) implemented `IComparable<T>` + ordering operators. v0.5.26 emits them for ALL id types:
+
+- Time-ordered strategies keep their creation-ordered comparison (unchanged).
+- All other ids (plain Guid, NanoId, CUID2, int, long, string) get a DETERMINISTIC value-based comparison: `String.CompareOrdinal` for string-backed, `Value.CompareTo` for Guid/int/long. This is stable and total but NOT chronological - sufficient for `SortedSet` / `SortedDictionary` keys, `OrderBy`, binary search, and deterministic test output.
+
+### Migration from v0.5.25
+
+A consumer-declared `CompareTo` on a previously-non-comparable id now triggers ORIONKEY008 (member collision). Remove the hand-written `CompareTo` to inherit the generated one, or rename it. Non-time-ordered ids that were relied upon to NOT be comparable are unaffected at runtime (the comparison is additive).
+
+### Tests
+
+4 new facts; 3 existing "does-not-emit" facts updated to assert the value-based comparison. 190 total.
+
 ## [0.5.25] - 2026-06-12
 
 ### Added

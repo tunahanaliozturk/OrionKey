@@ -15,6 +15,6 @@
     <RepositoryType>git</RepositoryType>
     <PackageProjectUrl>https://github.com/tunahanaliozturk/OrionKey</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <Version>0.5.25</Version>
+    <Version>0.5.26</Version>
   </PropertyGroup>
 </Project>

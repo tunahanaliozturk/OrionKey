@@ -114,11 +114,8 @@ predicate: static (node, _) => node is StructDeclarationSyntax or RecordDeclarat
 
         spc.AddSource($"{model.Name}.OrionId.g.cs", Emit.CoreBodyEmitter.Emit(model));
 
-        var comparable = Emit.ComparableEmitter.Emit(model);
-        if (comparable is not null)
-        {
-            spc.AddSource($"{model.Name}.OrionId.Comparable.g.cs", comparable);
-        }
+        // v0.5.26: IComparable is now emitted for EVERY id type (was sortable-only).
+        spc.AddSource($"{model.Name}.OrionId.Comparable.g.cs", Emit.ComparableEmitter.Emit(model));
 
         spc.AddSource($"{model.Name}.OrionId.Json.g.cs", Emit.JsonConverterEmitter.Emit(model));
         spc.AddSource($"{model.Name}.OrionId.TypeConverter.g.cs", Emit.TypeConverterEmitter.Emit(model));
