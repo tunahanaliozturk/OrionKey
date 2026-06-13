@@ -78,6 +78,18 @@ internal static class CoreBodyEmitter
         sb.AppendLine("        foreach (var v in values) list.Add(new(v));");
         sb.AppendLine("        return list;");
         sb.AppendLine("    }");
+        // v0.5.25: inverse of WrapAll - bulk unwrap for handing raw values to EF Core
+        // Contains() queries, Dapper IN clauses, or external APIs that take the
+        // underlying type. Same ICollection capacity optimization as WrapAll.
+        sb.AppendLine($"    public static global::System.Collections.Generic.IReadOnlyList<{value}> UnwrapAll(global::System.Collections.Generic.IEnumerable<{name}> ids)");
+        sb.AppendLine("    {");
+        sb.AppendLine("        global::System.ArgumentNullException.ThrowIfNull(ids);");
+        sb.AppendLine($"        var list = ids is global::System.Collections.Generic.ICollection<{name}> c");
+        sb.AppendLine($"            ? new global::System.Collections.Generic.List<{value}>(c.Count)");
+        sb.AppendLine($"            : new global::System.Collections.Generic.List<{value}>();");
+        sb.AppendLine("        foreach (var id in ids) list.Add(id.Value);");
+        sb.AppendLine("        return list;");
+        sb.AppendLine("    }");
 
         sb.AppendLine($"    public bool Equals({name} other) => Value.Equals(other.Value);");
         sb.AppendLine($"    public override bool Equals(object? obj) => obj is {name} other && Equals(other);");
