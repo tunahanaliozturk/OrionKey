@@ -26,18 +26,20 @@ public class ComparableTests
         Assert.Contains("public int CompareTo(TenantId other)", output);
     }
 
+    // v0.5.26: non-time-ordered ids are now ALSO comparable, with a deterministic
+    // (value-based, non-chronological) comparison so they work as SortedSet keys etc.
     [Fact]
-    public void DoesNotEmit_IComparable_ForNanoId()
+    public void NanoId_EmitsValueBased_OrdinalComparison()
     {
         var output = Generate("OrionId<string, NanoId>", "SessionId");
-        Assert.DoesNotContain("CompareTo", output);
+        Assert.Contains("public int CompareTo(SessionId other) => global::System.String.CompareOrdinal(Value, other.Value);", output);
     }
 
     [Fact]
-    public void DoesNotEmit_IComparable_ForPlainGuid()
+    public void PlainGuid_EmitsValueBased_GuidComparison()
     {
         var output = Generate("OrionId<System.Guid>", "OrderId");
-        Assert.DoesNotContain("CompareTo", output);
+        Assert.Contains("public int CompareTo(OrderId other) => Value.CompareTo(other.Value);", output);
     }
 
     [Fact]
@@ -69,9 +71,10 @@ public class ComparableTests
     }
 
     [Fact]
-    public void DoesNotEmit_IComparable_ForCuid2()
+    public void Cuid2_EmitsValueBased_OrdinalComparison()
     {
+        // v0.5.26: Cuid2 (not time-ordered) now emits a deterministic ordinal compare.
         var output = Generate("OrionId<string, Cuid2>", "AccountId");
-        Assert.DoesNotContain("CompareTo", output);
+        Assert.Contains("public int CompareTo(AccountId other) => global::System.String.CompareOrdinal(Value, other.Value);", output);
     }
 }

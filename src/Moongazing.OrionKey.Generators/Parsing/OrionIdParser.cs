@@ -134,10 +134,9 @@ internal static class OrionIdParser
         {
             emitted.Add("ParseOrDefault");
         }
-        if (model.IsSortable)
-        {
-            emitted.Add("CompareTo");
-        }
+        // v0.5.26: CompareTo is now emitted for ALL id types (was sortable-only), so it
+        // is unconditionally on the collision list.
+        emitted.Add("CompareTo");
         foreach (var memberName in emitted)
         {
             if (!symbol.GetMembers(memberName).IsEmpty)
