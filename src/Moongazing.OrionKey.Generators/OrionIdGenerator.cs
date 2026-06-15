@@ -120,6 +120,9 @@ predicate: static (node, _) => node is StructDeclarationSyntax or RecordDeclarat
         spc.AddSource($"{model.Name}.OrionId.Json.g.cs", Emit.JsonConverterEmitter.Emit(model));
         spc.AddSource($"{model.Name}.OrionId.TypeConverter.g.cs", Emit.TypeConverterEmitter.Emit(model));
         spc.AddSource($"{model.Name}.OrionId.Parsable.g.cs", Emit.ParsableEmitter.Emit(model));
+        // v0.5.27: IUtf8SpanFormattable (UTF-8 counterpart to ISpanFormattable), guarded by
+        // #if NET8_0_OR_GREATER so older consumers are unaffected.
+        spc.AddSource($"{model.Name}.OrionId.Utf8.g.cs", Emit.Utf8SpanFormattableEmitter.Emit(model));
 
         if (flags.HasEfCore)
         {
