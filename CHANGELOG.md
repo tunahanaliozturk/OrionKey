@@ -4,6 +4,27 @@ All notable changes to OrionKey are documented in this file. The format is based
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.29] - 2026-06-16
+
+### Added
+
+#### Public throwing `Parse` overloads
+
+Generated ids now expose public throwing `Parse` methods, completing the parse surface alongside the existing public `TryParse` overloads. Until now the throwing `Parse` was only reachable through the `IParsable<T>` / `ISpanParsable<T>` interfaces (explicit interface members), so consumer code that wanted fail-fast parsing had to constrain to the interface or call `TryParse` and throw by hand.
+
+- Four overloads are emitted: `Parse(string, IFormatProvider?)`, `Parse(string)`, `Parse(ReadOnlySpan<char>, IFormatProvider?)`, and `Parse(ReadOnlySpan<char>)`. The no-provider overloads forward to the provider overloads with `null`.
+- The explicit `IParsable<T>.Parse` and `ISpanParsable<T>.Parse` members now delegate to these public overloads, so there is a single throwing implementation rather than two copies of the parse expression.
+- Native exceptions are preserved: `Guid`/`int`/`long`-backed ids surface `FormatException` / `OverflowException` / `ArgumentNullException` from the underlying primitive's `Parse`, exactly as before.
+- The `string`-backed overload now guards null with `ArgumentNullException` instead of letting it surface as a `NullReferenceException` from the constructor call, matching the BCL `Parse(null)` convention and the numeric/Guid branches.
+- `Parse` and `TryParse` are now on the ORIONKEY005 member-collision list. Because the parse surface is emitted as public members, a consumer that hand-wrote their own `Parse` (a common workaround before this release) would otherwise hit a raw duplicate-member compile error; they now get the ORIONKEY005 diagnostic and its code fix instead. `TryParse` is added alongside to close the equivalent pre-existing gap for its (also unconditionally emitted) public overloads.
+
+### Tests
+
+- `DiagnosticsTests`: a consumer-declared `Parse` and a consumer-declared `TryParse` each raise ORIONKEY005.
+- `MemberCollisionCodeFixProviderTests`: the code fix removes a user-declared `Parse` method.
+- `PublicParseEmitTests`: the Guid-backed struct emits all four public `Parse` overloads; the explicit interface `Parse` members delegate to the public overloads; the string-backed struct guards null with `ArgumentNullException`.
+- `PublicParseTests`: each backing (Guid, long, string) round-trips through the public `Parse` (string and span overloads); malformed input throws `FormatException`; null throws `ArgumentNullException` for every backing; and parsing through the `IParsable<T>` interface still works.
+
 ## [0.5.28] - 2026-06-15
 
 ### Added

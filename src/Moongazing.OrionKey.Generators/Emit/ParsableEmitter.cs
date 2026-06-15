@@ -4,7 +4,12 @@ using ValueType = Moongazing.OrionKey.Generators.Model.ValueType;
 
 namespace Moongazing.OrionKey.Generators.Emit;
 
-/// <summary>Emits explicit IParsable/ISpanParsable members for minimal-API binding.</summary>
+/// <summary>
+/// Emits the IParsable/ISpanParsable surface: the explicit interface members (for minimal-API
+/// binding), the public TryParse overloads (for consumer code and route binding), and the public
+/// throwing Parse overloads. The explicit interface Parse members delegate to the public Parse
+/// methods so there is a single throwing implementation.
+/// </summary>
 internal static class ParsableEmitter
 {
     public static string Emit(OrionIdModel model)
@@ -23,7 +28,7 @@ internal static class ParsableEmitter
                 "new(long.Parse(s, provider))",
                 "if (long.TryParse(s, provider, out var v)) { result = new(v); return true; } result = default; return false;"),
             ValueType.String => (
-                "new(s.ToString())",
+                "new((s ?? throw new global::System.ArgumentNullException(nameof(s))).ToString())",
                 "if (s is null) { result = default; return false; } result = new(s.ToString()); return true;"),
             _ => throw new System.ArgumentOutOfRangeException(nameof(model)),
         };
@@ -42,13 +47,13 @@ internal static class ParsableEmitter
         sb.AppendLine("{");
         sb.AppendLine($"    static {name} global::System.IParsable<{name}>.Parse("
                     + "string s, global::System.IFormatProvider? provider) "
-                    + $"=> {parseStr};");
+                    + "=> Parse(s, provider);");
         sb.AppendLine($"    static bool global::System.IParsable<{name}>.TryParse("
                     + "string? s, global::System.IFormatProvider? provider, "
                     + $"out {name} result) {{ {tryBody} }}");
         sb.AppendLine($"    static {name} global::System.ISpanParsable<{name}>.Parse("
                     + "global::System.ReadOnlySpan<char> s, global::System.IFormatProvider? provider) "
-                    + $"=> {ParseSpan(model)};");
+                    + "=> Parse(s, provider);");
         sb.AppendLine($"    static bool global::System.ISpanParsable<{name}>.TryParse("
                     + "global::System.ReadOnlySpan<char> s, global::System.IFormatProvider? provider, "
                     + $"out {name} result) {{ {TrySpanBody(model)} }}");
@@ -69,6 +74,21 @@ internal static class ParsableEmitter
                     + $"out {name} result) {{ {TrySpanBody(model)} }}");
         sb.AppendLine($"    public static bool TryParse("
                     + $"global::System.ReadOnlySpan<char> s, out {name} result) => TryParse(s, null, out result);");
+        // v0.5.29: public throwing Parse overloads. The explicit IParsable/ISpanParsable.Parse
+        // members above delegate here, so there is one throwing implementation and consumer code
+        // can call MyId.Parse("...") directly (the explicit members are reachable only through the
+        // interface). Native exceptions are preserved: Guid/int/long Parse surface
+        // FormatException / OverflowException / ArgumentNullException as usual, and the string-
+        // backed overload throws ArgumentNullException on null rather than a NullReferenceException.
+        sb.AppendLine($"    public static {name} Parse("
+                    + "string s, global::System.IFormatProvider? provider) "
+                    + $"=> {parseStr};");
+        sb.AppendLine($"    public static {name} Parse(string s) => Parse(s, null);");
+        sb.AppendLine($"    public static {name} Parse("
+                    + "global::System.ReadOnlySpan<char> s, global::System.IFormatProvider? provider) "
+                    + $"=> {ParseSpan(model)};");
+        sb.AppendLine($"    public static {name} Parse("
+                    + $"global::System.ReadOnlySpan<char> s) => Parse(s, null);");
         // v0.5.21: ParseOrDefault helper. Returns null on null/empty/malformed input
         // instead of throwing. Useful when the caller is parsing user-supplied / query-
         // string input and would otherwise wrap every Parse call in try/catch.

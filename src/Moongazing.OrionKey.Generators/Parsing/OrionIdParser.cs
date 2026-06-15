@@ -147,6 +147,14 @@ internal static class OrionIdParser
         emitted.Add("op_LessThanOrEqual");
         emitted.Add("op_GreaterThan");
         emitted.Add("op_GreaterThanOrEqual");
+        // v0.5.29 fix (codex/coderabbit P2): the parse surface is emitted as PUBLIC members,
+        // so a consumer that hand-wrote their own Parse helper (a common workaround before the
+        // public Parse shipped) would get a raw duplicate-member compile error instead of the
+        // ORIONKEY005 collision diagnostic and its code fix. Parse and TryParse are both emitted
+        // unconditionally for every id type (string + ReadOnlySpan<char> overloads always; the
+        // explicit interface members do not collide, but the public ones do), so add both.
+        emitted.Add("Parse");
+        emitted.Add("TryParse");
         foreach (var memberName in emitted)
         {
             if (!symbol.GetMembers(memberName).IsEmpty)

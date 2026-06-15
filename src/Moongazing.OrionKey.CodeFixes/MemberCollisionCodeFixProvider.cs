@@ -22,8 +22,12 @@ namespace Moongazing.OrionKey.CodeFixes;
 [Shared]
 public sealed class MemberCollisionCodeFixProvider : CodeFixProvider
 {
+    // v0.5.29: Parse and TryParse added so the code fix (not just the ORIONKEY005 detection)
+    // can resolve a collision with the now-public parse surface. This allow-list is the
+    // provider's own guard against acting on a member name it does not recognise, so it must
+    // stay in sync with the names OrionIdParser.CheckMemberCollisions flags.
     private static readonly ImmutableHashSet<string> GeneratedMemberNames = ImmutableHashSet.Create(
-        "Value", "New", "Empty", "Equals", "GetHashCode", "ToString", "CompareTo");
+        "Value", "New", "Empty", "Equals", "GetHashCode", "ToString", "CompareTo", "Parse", "TryParse");
 
     /// <inheritdoc />
     public override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create("ORIONKEY005");
