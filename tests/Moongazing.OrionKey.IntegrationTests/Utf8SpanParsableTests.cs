@@ -44,6 +44,15 @@ public class Utf8SpanParsableTests
     }
 
     [Fact]
+    public void A_string_id_rejects_malformed_utf8_instead_of_corrupting_it()
+    {
+        // 0xFF is never valid in UTF-8; a lenient decoder would replace it with U+FFFD and
+        // "succeed", storing a corrupted id. The strict parser must reject it.
+        byte[] invalid = [0x41, 0xFF, 0x42];
+        Assert.False(TenantId.TryParse(invalid, out _));
+    }
+
+    [Fact]
     public void The_id_parses_through_the_IUtf8SpanParsable_interface()
     {
         var utf8 = Encoding.UTF8.GetBytes("12345");

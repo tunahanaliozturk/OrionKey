@@ -18,22 +18,22 @@ internal static class Utf8SpanParsableEmitter
     {
         var name = model.Name;
 
-        // Concrete parse/try-parse expressions over the UTF-8 byte span. Guid's UTF-8 overload
-        // takes no IFormatProvider (Guid formatting/parsing is culture-independent); int/long do.
-        var (parseExpr, tryBody) = model.ValueType switch
+        // The single per-type TryParse body. Numeric/Guid branches call the concrete UTF-8 parse
+        // overload directly (no boxing); the string branch rejects malformed UTF-8 with the
+        // net8 Utf8.IsValid check FIRST - Encoding.UTF8.GetString uses replacement fallback and
+        // would otherwise silently turn invalid bytes into a corrupted id (codex P2), unlike the
+        // strict numeric/Guid branches. Guid's UTF-8 overload takes no IFormatProvider.
+        var tryBody = model.ValueType switch
         {
-            ValueType.Guid => (
-                "new(global::System.Guid.Parse(utf8))",
-                "if (global::System.Guid.TryParse(utf8, out var v)) { result = new(v); return true; } result = default; return false;"),
-            ValueType.Int32 => (
-                "new(int.Parse(utf8, provider))",
-                "if (int.TryParse(utf8, provider, out var v)) { result = new(v); return true; } result = default; return false;"),
-            ValueType.Int64 => (
-                "new(long.Parse(utf8, provider))",
-                "if (long.TryParse(utf8, provider, out var v)) { result = new(v); return true; } result = default; return false;"),
-            ValueType.String => (
-                "new(global::System.Text.Encoding.UTF8.GetString(utf8))",
-                "result = new(global::System.Text.Encoding.UTF8.GetString(utf8)); return true;"),
+            ValueType.Guid =>
+                "if (global::System.Guid.TryParse(utf8, out var v)) { result = new(v); return true; } result = default; return false;",
+            ValueType.Int32 =>
+                "if (int.TryParse(utf8, provider, out var v)) { result = new(v); return true; } result = default; return false;",
+            ValueType.Int64 =>
+                "if (long.TryParse(utf8, provider, out var v)) { result = new(v); return true; } result = default; return false;",
+            ValueType.String =>
+                "if (!global::System.Text.Unicode.Utf8.IsValid(utf8)) { result = default; return false; } "
+                + "result = new(global::System.Text.Encoding.UTF8.GetString(utf8)); return true;",
             _ => throw new System.ArgumentOutOfRangeException(nameof(model)),
         };
 
@@ -49,21 +49,24 @@ internal static class Utf8SpanParsableEmitter
 
         sb.AppendLine($"readonly partial struct {name} : global::System.IUtf8SpanParsable<{name}>");
         sb.AppendLine("{");
-        // Explicit interface members so the id flows through generic UTF-8 parsing constraints.
-        sb.AppendLine($"    static {name} global::System.IUtf8SpanParsable<{name}>.Parse("
-                    + "global::System.ReadOnlySpan<byte> utf8, global::System.IFormatProvider? provider) "
-                    + $"=> {parseExpr};");
-        sb.AppendLine($"    static bool global::System.IUtf8SpanParsable<{name}>.TryParse("
-                    + "global::System.ReadOnlySpan<byte> utf8, global::System.IFormatProvider? provider, "
-                    + $"out {name} result) {{ {tryBody} }}");
-        // Public overloads so consumer code can parse from a UTF-8 buffer without the generic
-        // dispatch, mirroring the v0.5.23 public ReadOnlySpan<char> overloads.
-        sb.AppendLine($"    /// <summary>Parses the id from a UTF-8 byte span (no string allocation on numeric backings).</summary>");
+        // Public overloads (the single validation point) so consumer code can parse from a UTF-8
+        // buffer without the generic dispatch, mirroring the v0.5.23 public ReadOnlySpan<char>
+        // overloads.
+        sb.AppendLine($"    /// <summary>Parses the id from a UTF-8 byte span (no string allocation on numeric backings; rejects malformed input).</summary>");
         sb.AppendLine($"    public static bool TryParse("
                     + "global::System.ReadOnlySpan<byte> utf8, global::System.IFormatProvider? provider, "
                     + $"out {name} result) {{ {tryBody} }}");
         sb.AppendLine($"    public static bool TryParse("
                     + $"global::System.ReadOnlySpan<byte> utf8, out {name} result) => TryParse(utf8, null, out result);");
+        // Explicit interface members delegate to the public overload so the validation logic lives
+        // in exactly one place and the id flows through generic UTF-8 parsing constraints.
+        sb.AppendLine($"    static {name} global::System.IUtf8SpanParsable<{name}>.Parse("
+                    + "global::System.ReadOnlySpan<byte> utf8, global::System.IFormatProvider? provider) "
+                    + $"=> TryParse(utf8, provider, out var r) ? r "
+                    + $": throw new global::System.FormatException(\"Cannot parse the UTF-8 input as {name}.\");");
+        sb.AppendLine($"    static bool global::System.IUtf8SpanParsable<{name}>.TryParse("
+                    + "global::System.ReadOnlySpan<byte> utf8, global::System.IFormatProvider? provider, "
+                    + $"out {name} result) => TryParse(utf8, provider, out result);");
         sb.AppendLine("}");
         sb.AppendLine("#endif");
         return sb.ToString();

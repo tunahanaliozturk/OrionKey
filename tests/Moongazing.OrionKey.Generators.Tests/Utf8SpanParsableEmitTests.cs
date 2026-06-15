@@ -44,6 +44,8 @@ public class Utf8SpanParsableEmitTests
             """);
 
         Assert.Contains("global::System.Text.Encoding.UTF8.GetString(utf8)", output, System.StringComparison.Ordinal);
+        // Malformed UTF-8 must be rejected (not silently replaced), matching the strict numeric branches.
+        Assert.Contains("global::System.Text.Unicode.Utf8.IsValid(utf8)", output, System.StringComparison.Ordinal);
     }
 
     [Fact]

@@ -13,7 +13,7 @@ All notable changes to OrionKey are documented in this file. The format is based
 Generated ids now implement `System.IUtf8SpanParsable<T>`, completing the allocation-free UTF-8 round-trip: an id can be parsed directly from a `ReadOnlySpan<byte>` (for example a `Utf8JsonReader` value span) with no intermediate string.
 
 - `Guid`/`int`/`long`-backed ids call the underlying primitive's **concrete** UTF-8 parse overload directly (Guid without a provider, numerics with one), never a boxing interface dispatch.
-- `string`-backed ids decode the UTF-8 bytes via `Encoding.UTF8.GetString`.
+- `string`-backed ids reject malformed UTF-8 with a `Utf8.IsValid` check before decoding, instead of silently replacing invalid bytes with U+FFFD and storing a corrupted id (codex) - matching the strictness of the numeric/Guid branches.
 - Public `TryParse(ReadOnlySpan<byte>, IFormatProvider?, out T)` and `TryParse(ReadOnlySpan<byte>, out T)` overloads are emitted alongside the explicit interface members (mirroring the v0.5.23 `ReadOnlySpan<char>` overloads), so consumer code can parse from a UTF-8 buffer without the generic dispatch.
 - Emitted into a separate `*.OrionId.Utf8Parse.g.cs` partial, guarded by `#if NET8_0_OR_GREATER` (the interface ships in net8), so consumers below net8 are unaffected.
 
