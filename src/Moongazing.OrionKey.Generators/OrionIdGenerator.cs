@@ -123,6 +123,8 @@ predicate: static (node, _) => node is StructDeclarationSyntax or RecordDeclarat
         // v0.5.27: IUtf8SpanFormattable (UTF-8 counterpart to ISpanFormattable), guarded by
         // #if NET8_0_OR_GREATER so older consumers are unaffected.
         spc.AddSource($"{model.Name}.OrionId.Utf8.g.cs", Emit.Utf8SpanFormattableEmitter.Emit(model));
+        // v0.5.28: IUtf8SpanParsable (UTF-8 parse counterpart), same net8 guard.
+        spc.AddSource($"{model.Name}.OrionId.Utf8Parse.g.cs", Emit.Utf8SpanParsableEmitter.Emit(model));
 
         if (flags.HasEfCore)
         {
