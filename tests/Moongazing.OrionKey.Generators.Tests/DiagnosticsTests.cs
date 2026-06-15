@@ -67,6 +67,39 @@ public class DiagnosticsTests
     }
 
     [Fact]
+    public void ORIONKEY005_ShouldWarn_WhenStructDeclaresOwnParse()
+    {
+        // v0.5.29: the public throwing Parse is now generated, so a consumer-declared Parse
+        // must surface as the ORIONKEY005 collision (with its code fix) rather than a raw
+        // duplicate-member compile error.
+        const string source = """
+            using Moongazing.OrionKey;
+            namespace Demo;
+            [OrionId<System.Guid>]
+            public readonly partial struct OrderId
+            {
+                public static OrderId Parse(string s) => default;
+            }
+            """;
+        Assert.Contains("ORIONKEY005", DiagnosticIds(source));
+    }
+
+    [Fact]
+    public void ORIONKEY005_ShouldWarn_WhenStructDeclaresOwnTryParse()
+    {
+        const string source = """
+            using Moongazing.OrionKey;
+            namespace Demo;
+            [OrionId<System.Guid>]
+            public readonly partial struct OrderId
+            {
+                public static bool TryParse(string? s, out OrderId result) { result = default; return false; }
+            }
+            """;
+        Assert.Contains("ORIONKEY005", DiagnosticIds(source));
+    }
+
+    [Fact]
     public void NoDiagnostics_ForValidDeclaration()
     {
         const string source = """

@@ -152,6 +152,24 @@ public sealed class MemberCollisionCodeFixProviderTests
     }
 
     [Fact]
+    public async Task Removes_user_declared_Parse_method()
+    {
+        const string source = """
+            namespace Demo;
+
+            [OrionId<System.Guid>]
+            public readonly partial struct OrderId
+            {
+                public static OrderId Parse(string s) => default;
+            }
+            """;
+
+        var fixedSource = await ApplyFixAsync(source, "ORIONKEY005-Parse");
+
+        Assert.DoesNotContain("public static OrderId Parse", fixedSource, System.StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task Leaves_non_colliding_members_alone()
     {
         const string source = """
