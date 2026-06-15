@@ -4,6 +4,24 @@ All notable changes to OrionKey are documented in this file. The format is based
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.28] - 2026-06-15
+
+### Added
+
+#### `IUtf8SpanParsable` now emitted (UTF-8 parse counterpart to v0.5.27 `IUtf8SpanFormattable`)
+
+Generated ids now implement `System.IUtf8SpanParsable<T>`, completing the allocation-free UTF-8 round-trip: an id can be parsed directly from a `ReadOnlySpan<byte>` (for example a `Utf8JsonReader` value span) with no intermediate string.
+
+- `Guid`/`int`/`long`-backed ids call the underlying primitive's **concrete** UTF-8 parse overload directly (Guid without a provider, numerics with one), never a boxing interface dispatch.
+- `string`-backed ids decode the UTF-8 bytes via `Encoding.UTF8.GetString`.
+- Public `TryParse(ReadOnlySpan<byte>, IFormatProvider?, out T)` and `TryParse(ReadOnlySpan<byte>, out T)` overloads are emitted alongside the explicit interface members (mirroring the v0.5.23 `ReadOnlySpan<char>` overloads), so consumer code can parse from a UTF-8 buffer without the generic dispatch.
+- Emitted into a separate `*.OrionId.Utf8Parse.g.cs` partial, guarded by `#if NET8_0_OR_GREATER` (the interface ships in net8), so consumers below net8 are unaffected.
+
+### Tests
+
+- `Utf8SpanParsableEmitTests` (4): guard + interface, concrete numeric parse with provider, string UTF-8 decode, public byte-span overloads.
+- `Utf8SpanParsableTests` integration (5): Guid/long/string round-trip via UTF-8, malformed numeric returns false, parse through the `IUtf8SpanParsable<T>` interface.
+
 ## [0.5.27] - 2026-06-15
 
 ### Added
