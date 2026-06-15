@@ -22,7 +22,7 @@ public class Utf8SpanFormattableEmitTests
     }
 
     [Fact]
-    public void Numeric_backed_id_delegates_to_underlying_IUtf8SpanFormattable()
+    public void Numeric_backed_id_calls_the_concrete_overload_without_boxing()
     {
         var output = Generate("""
             using Moongazing.OrionKey;
@@ -30,8 +30,26 @@ public class Utf8SpanFormattableEmitTests
             [OrionId<long, Snowflake>] public readonly partial struct AccountId;
             """);
 
-        Assert.Contains("((global::System.IUtf8SpanFormattable)Value).TryFormat(utf8Destination, out bytesWritten, format, provider);",
+        // Must NOT box to IUtf8SpanFormattable (that allocates and defeats the purpose):
+        // call the concrete long.TryFormat overload directly, with the provider.
+        Assert.Contains("return Value.TryFormat(utf8Destination, out bytesWritten, format, provider);",
             output, System.StringComparison.Ordinal);
+        Assert.DoesNotContain("(global::System.IUtf8SpanFormattable)Value", output, System.StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Guid_backed_id_calls_the_concrete_overload_without_provider()
+    {
+        var output = Generate("""
+            using Moongazing.OrionKey;
+            namespace Demo;
+            [OrionId<System.Guid>] public readonly partial struct OrderId;
+            """);
+
+        // Guid's UTF-8 TryFormat overload takes no IFormatProvider.
+        Assert.Contains("return Value.TryFormat(utf8Destination, out bytesWritten, format);",
+            output, System.StringComparison.Ordinal);
+        Assert.DoesNotContain("(global::System.IUtf8SpanFormattable)Value", output, System.StringComparison.Ordinal);
     }
 
     [Fact]

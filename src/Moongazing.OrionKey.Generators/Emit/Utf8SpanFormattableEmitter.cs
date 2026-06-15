@@ -18,11 +18,16 @@ internal static class Utf8SpanFormattableEmitter
     {
         var name = model.Name;
 
+        // Call the underlying primitive's CONCRETE UTF-8 TryFormat - never cast to
+        // IUtf8SpanFormattable, which would box the value type and allocate on every call,
+        // defeating the whole point of this allocation-free surface. Guid's UTF-8 overload takes
+        // no IFormatProvider (Guid formatting is culture-independent); int/long take one.
         var body = model.ValueType switch
         {
-            ValueType.Guid or ValueType.Int32 or ValueType.Int64 =>
-                "        return ((global::System.IUtf8SpanFormattable)Value)"
-                + ".TryFormat(utf8Destination, out bytesWritten, format, provider);",
+            ValueType.Guid =>
+                "        return Value.TryFormat(utf8Destination, out bytesWritten, format);",
+            ValueType.Int32 or ValueType.Int64 =>
+                "        return Value.TryFormat(utf8Destination, out bytesWritten, format, provider);",
             ValueType.String =>
                 "        var source = Value ?? string.Empty;\n"
                 + "        return global::System.Text.Encoding.UTF8"

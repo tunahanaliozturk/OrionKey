@@ -12,7 +12,7 @@ All notable changes to OrionKey are documented in this file. The format is based
 
 Generated ids now implement `System.IUtf8SpanFormattable`, so an id can format itself directly into a `Span<byte>` with no intermediate string or char-span allocation. This is the path `System.Text.Json`'s writer and `Utf8.TryWrite` interpolated handlers take, so serialization-heavy code gets an allocation-free format surface symmetric with the v0.5.11 `ISpanFormattable`.
 
-- `Guid`/`int`/`long`-backed ids delegate to the underlying value's `IUtf8SpanFormattable.TryFormat`.
+- `Guid`/`int`/`long`-backed ids call the underlying primitive's **concrete** UTF-8 `TryFormat` overload directly (Guid without a provider, numerics with one) - never a cast to `IUtf8SpanFormattable`, which would box the value type and allocate on every call, defeating the whole point of an allocation-free surface.
 - `string`-backed ids UTF-8 encode their value via `Encoding.UTF8.TryGetBytes` (string does not implement the interface).
 - Emitted into a separate `*.OrionId.Utf8.g.cs` partial, guarded by `#if NET8_0_OR_GREATER` because the interface ships in net8: older consumers (the existing `IParsable`/`ISpanParsable` surface already requires net7) simply do not see it, so nothing breaks below net8.
 
