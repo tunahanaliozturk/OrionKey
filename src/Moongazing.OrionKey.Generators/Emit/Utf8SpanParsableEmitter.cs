@@ -23,10 +23,25 @@ internal static class Utf8SpanParsableEmitter
         // net8 Utf8.IsValid check FIRST - Encoding.UTF8.GetString uses replacement fallback and
         // would otherwise silently turn invalid bytes into a corrupted id (codex P2), unlike the
         // strict numeric/Guid branches. Guid's UTF-8 overload takes no IFormatProvider.
+        //
+        // Guid only gained a UTF-8 parse overload (Guid.TryParse(ReadOnlySpan<byte>, IFormatProvider,
+        // out Guid), i.e. IUtf8SpanParsable<Guid>) in net10. On net8/net9 the call would bind to the
+        // ReadOnlySpan<char> overload and fail to compile (CS1503 byte->char). int/long DID ship
+        // IUtf8SpanParsable in net8, so their UTF-8 overloads are safe on every target. For Guid on
+        // net8/net9 we transcode the (max 36-char) ASCII/UTF-8 input into a stack char buffer and
+        // parse that; net10+ uses the direct, allocation-free overload.
+        var guidTryBody =
+            "#if NET10_0_OR_GREATER\n"
+            + "        if (global::System.Guid.TryParse(utf8, provider, out var v)) { result = new(v); return true; } result = default; return false;\n"
+            + "#else\n"
+            + "        global::System.Span<char> chars = stackalloc char[utf8.Length];\n"
+            + "        if (global::System.Text.Encoding.UTF8.GetChars(utf8, chars) != chars.Length) { result = default; return false; }\n"
+            + "        if (global::System.Guid.TryParse(chars, out var v)) { result = new(v); return true; } result = default; return false;\n"
+            + "#endif";
+
         var tryBody = model.ValueType switch
         {
-            ValueType.Guid =>
-                "if (global::System.Guid.TryParse(utf8, out var v)) { result = new(v); return true; } result = default; return false;",
+            ValueType.Guid => guidTryBody,
             ValueType.Int32 =>
                 "if (int.TryParse(utf8, provider, out var v)) { result = new(v); return true; } result = default; return false;",
             ValueType.Int64 =>
@@ -55,7 +70,15 @@ internal static class Utf8SpanParsableEmitter
         sb.AppendLine($"    /// <summary>Parses the id from a UTF-8 byte span (no string allocation on numeric backings; rejects malformed input).</summary>");
         sb.AppendLine($"    public static bool TryParse("
                     + "global::System.ReadOnlySpan<byte> utf8, global::System.IFormatProvider? provider, "
-                    + $"out {name} result) {{ {tryBody} }}");
+                    + $"out {name} result)");
+        sb.AppendLine("    {");
+        // tryBody may span multiple lines and contain #if directives (Guid backing), so emit it on
+        // its own lines - preprocessor directives must start at the beginning of a line.
+        foreach (var line in tryBody.Split('\n'))
+        {
+            sb.AppendLine(line.StartsWith("#", System.StringComparison.Ordinal) ? line : "        " + line.TrimStart());
+        }
+        sb.AppendLine("    }");
         sb.AppendLine($"    public static bool TryParse("
                     + $"global::System.ReadOnlySpan<byte> utf8, out {name} result) => TryParse(utf8, null, out result);");
         // Explicit interface members delegate to the public overload so the validation logic lives
