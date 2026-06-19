@@ -30,8 +30,56 @@ failures += RoundTripParse(TenantId.New());
 failures += RoundTripParse(InvoiceId.New());
 failures += RoundTripParse(TraceId.New());
 
+failures += MonotonicHexIsOrdinalSorted();
+
 Console.WriteLine($"AOT sample completed with {failures} failure(s).");
 return failures;
+
+// MonotonicHex ids are time-ordered and strictly increasing within a process, so a freshly
+// minted run sorts identically by creation order and by ordinal string comparison. Both the
+// TraceId wrapper (string storage) and the raw OrionKey.NewMonotonicHex() facade are checked.
+static int MonotonicHexIsOrdinalSorted()
+{
+    const int count = 1000;
+
+    var wrapped = new string[count];
+    for (var i = 0; i < count; i++)
+    {
+        wrapped[i] = TraceId.New().Value;
+    }
+
+    var raw = new string[count];
+    for (var i = 0; i < count; i++)
+    {
+        raw[i] = OrionKey.NewMonotonicHex();
+    }
+
+    var failures = 0;
+    for (var i = 1; i < count; i++)
+    {
+        if (string.CompareOrdinal(wrapped[i - 1], wrapped[i]) >= 0)
+        {
+            Console.Error.WriteLine($"MonotonicHex (TraceId) not strictly increasing at {i}: {wrapped[i - 1]} >= {wrapped[i]}");
+            failures++;
+            break;
+        }
+    }
+    for (var i = 1; i < count; i++)
+    {
+        if (string.CompareOrdinal(raw[i - 1], raw[i]) >= 0)
+        {
+            Console.Error.WriteLine($"MonotonicHex (facade) not strictly increasing at {i}: {raw[i - 1]} >= {raw[i]}");
+            failures++;
+            break;
+        }
+    }
+
+    if (failures == 0)
+    {
+        Console.WriteLine($"  Mono  MonotonicHex {count} ids strictly ordinal-increasing (wrapper + facade)");
+    }
+    return failures;
+}
 
 static int RoundTripJson<T>(T id, JsonTypeInfo<T> typeInfo) where T : IEquatable<T>
 {

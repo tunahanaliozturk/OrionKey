@@ -118,12 +118,36 @@ ASP.NET Core model binding. No manual registration is required.
 | `[OrionId<string, Ulid>]` | string | ULID | yes |
 | `[OrionId<string, Ksuid>]` | string | KSUID | yes |
 | `[OrionId<string, ObjectId>]` | string | MongoDB ObjectId (24-char hex) | yes |
+| `[OrionId<string, MonotonicHex>]` | string | 32-char lowercase hex, time-ordered | yes |
 | `[OrionId<string, NanoId>]` | string | NanoId | no |
 | `[OrionId<string, Cuid2>]` | string | CUID2 | no |
 | `[OrionId<int>]` / `[OrionId<long>]` | int/long | none (DB identity) | n/a |
 
 The `int` and `long` integer forms have no `New()` factory; they model ids assigned
 externally, typically by a database identity column.
+
+### MonotonicHex
+
+`MonotonicHex` produces a 32-character lowercase hex string built from a 48-bit millisecond
+Unix timestamp (big-endian) followed by 80 bits of randomness. The big-endian layout and the
+`0-9a-f` alphabet make ordinal string comparison equal chronological order, so the raw string
+sorts the same way in code, in a database index, and in a hex-sorted store. Ids minted within
+the same millisecond are strictly increasing within a process: the randomness block is
+incremented rather than re-drawn, so a sequence is monotonic. If the clock steps backwards
+(NTP correction, leap second) the previous timestamp is held so the sequence never regresses.
+
+```csharp
+[OrionId<string, MonotonicHex>] public readonly partial struct TraceId;
+
+var a = TraceId.New();
+var b = TraceId.New();
+
+// Ordinal order equals creation order; b was minted after a.
+Console.WriteLine(string.CompareOrdinal(a.Value, b.Value) < 0);   // true
+```
+
+The runtime factory is also exposed directly for code that needs a raw id without a wrapper
+struct: `OrionKey.NewMonotonicHex()` returns the same 32-char lowercase hex string.
 
 ## What gets generated
 
@@ -132,7 +156,7 @@ For every annotated struct the generator emits, as `partial` companions:
 - The struct body itself: a `Value` member, a `New()` factory (strategy-backed types), and
   value-based `IEquatable` equality with `==` / `!=`.
 - An `IComparable` / `IComparable<T>` implementation, emitted only for sortable strategies
-  (`GuidV7`, `SequentialGuid`, `Snowflake`, `Ulid`, `Ksuid`, `ObjectId`).
+  (`GuidV7`, `SequentialGuid`, `Snowflake`, `Ulid`, `Ksuid`, `ObjectId`, `MonotonicHex`).
 - A `System.Text.Json` `JsonConverter` so the id serializes as its underlying value.
 - A `TypeConverter` for framework conversions and ASP.NET Core model binding.
 - `IParsable<T>` and `ISpanParsable<T>` implementations for allocation-aware parsing.
@@ -145,6 +169,7 @@ OrionKey emits additional companions automatically when the consumer project ref
 
 | Library | Generated companion | One-line registration |
 | --- | --- | --- |
+| System.Text.Json (source-gen) | `OrionKeyJsonConverterFactory` | `OrionKeyJsonRegistrar.AddTo(options);` |
 | Dapper | `<Id>DapperTypeHandler` | `OrionKeyDapperRegistrar.Register();` |
 | Newtonsoft.Json | `<Id>NewtonsoftJsonConverter` | `OrionKeyNewtonsoftJsonRegistrar.AddTo(settings);` |
 | MongoDB driver | `<Id>BsonSerializer` | `OrionKeyMongoRegistrar.Register();` |
@@ -152,7 +177,22 @@ OrionKey emits additional companions automatically when the consumer project ref
 
 Each registrar enumerates every `[OrionId]` struct in the assembly and wires it into the library's registry, so a single call covers every id you have declared.
 
-`System.Text.Json`, EF Core, and ASP.NET Core model binding still auto-discover their generated companions via attributes / conventions — no registrar call is required for those.
+For ordinary reflection-based `System.Text.Json`, EF Core, and ASP.NET Core model binding, the generated companions are still auto-discovered via attributes / conventions, so no registrar call is required. The `OrionKeyJsonRegistrar.AddTo(options)` call exists for the reflection-free source-generation path: pair it with a `JsonSerializerContext` constructed over those options, as covered in [AOT & trimming](#aot--trimming) below.
+
+### System.Text.Json source-generation
+
+`OrionKeyJsonRegistrar.AddTo(JsonSerializerOptions)` registers every generated id converter on the supplied options in one call, backed by `OrionKeyJsonConverterFactory`, a reflection-free `JsonConverterFactory` that resolves the assembly's `[OrionId]` types through a compile-time type switch. This is the path to use with a source-generated `JsonSerializerContext`, where the per-id `[JsonConverter]` attribute is not visible to the `System.Text.Json` generator. Register the converters first, then construct the context over those same options:
+
+```csharp
+var options = new JsonSerializerOptions();
+OrionKeyJsonRegistrar.AddTo(options);     // wires every [OrionId] converter, AOT-safe
+var ctx = new MyJsonContext(options);     // construct the context over those options
+
+var json = JsonSerializer.Serialize(OrderId.New(), ctx.OrderId);
+var id = JsonSerializer.Deserialize(json, ctx.OrderId);
+```
+
+Constructing the context with a bare `MyJsonContext.Default` does not honor the converters, because `Default` is built over an internal options instance that never saw the `AddTo` call. Always build the context over the options you registered into. Ids still serialize as their bare scalar (string or number) shape.
 
 ## AOT & trimming
 
@@ -204,7 +244,8 @@ OrionKey ships in phased minor releases on the way to 1.0:
 - **`0.3.1` — Logo refresh** *(Done, 2026-05-23)* — new minimalist family-style key logo in Moongazing indigo; no code changes.
 - **`0.4.0` — Native AOT & trimming** *(Done)* — full `PublishAot`/`PublishTrimmed` compatibility with a verified AOT sample app and CI publish job.
 - **`0.5.0` — Analyzer, code-fix, stabilization** *(Planned, Q4 2026)* — new diagnostics (`ORIONKEY006`–`008`), code-fix providers, source-generator performance pass.
-- **`0.6.0` — Composite IDs & extra emitters** *(Planned, Q1 2027)* — multi-value tuple IDs, `IUtf8SpanFormattable`/`IUtf8SpanParsable`, `Tsid`/`Xid` strategies.
+- **`0.6.0` — Source-gen JSON path & `MonotonicHex`** *(Done, 2026-06-19)* — reflection-free `System.Text.Json` registrar (`OrionKeyJsonRegistrar.AddTo`) for the AOT source-generation path, and the sortable, monotonic `MonotonicHex` string strategy.
+- **`0.7.0` — Composite IDs & extra emitters** *(Planned, Q1 2027)* — multi-value tuple IDs, `IUtf8SpanFormattable`/`IUtf8SpanParsable`, `Tsid`/`Xid` strategies.
 - **`1.0.0` — Stable API** *(Planned, Q2 2027)* — public-type and emitter-contract freeze, LTS window, `net8.0` drop decision.
 
 Full roadmap with *Considered* and *Out of scope* sections lives in
