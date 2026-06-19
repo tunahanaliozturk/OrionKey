@@ -17,8 +17,14 @@ public class Utf8SpanParsableEmitTests
 
         Assert.Contains("#if NET8_0_OR_GREATER", output, System.StringComparison.Ordinal);
         Assert.Contains("global::System.IUtf8SpanParsable<UserId>", output, System.StringComparison.Ordinal);
-        // Guid's UTF-8 parse takes no provider and is called concretely (no boxing).
-        Assert.Contains("global::System.Guid.TryParse(utf8, out var v)", output, System.StringComparison.Ordinal);
+        // Guid only gained a ReadOnlySpan<byte> parse overload in net10, so the direct,
+        // allocation-free call is gated behind NET10_0_OR_GREATER and passes the provider.
+        Assert.Contains("#if NET10_0_OR_GREATER", output, System.StringComparison.Ordinal);
+        Assert.Contains("global::System.Guid.TryParse(utf8, provider, out var v)", output, System.StringComparison.Ordinal);
+        // On net8/net9 (no byte-span Guid overload) the UTF-8 bytes are transcoded to chars and
+        // parsed through the char overload, so the emitted code compiles on every target.
+        Assert.Contains("global::System.Text.Encoding.UTF8.GetChars(utf8, chars)", output, System.StringComparison.Ordinal);
+        Assert.Contains("global::System.Guid.TryParse(chars, out var v)", output, System.StringComparison.Ordinal);
     }
 
     [Fact]

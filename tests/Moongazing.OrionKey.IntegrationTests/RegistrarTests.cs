@@ -7,6 +7,7 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Moongazing.OrionKey.IntegrationTests;
 
+[Collection(DapperStaticStateCollectionMarker.Name)]
 public class RegistrarTests
 {
     [Fact]

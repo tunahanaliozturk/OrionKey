@@ -3,6 +3,7 @@ using Microsoft.Data.Sqlite;
 
 namespace Moongazing.OrionKey.IntegrationTests;
 
+[Collection(DapperStaticStateCollectionMarker.Name)]
 public class DapperRoundTripTests
 {
     [Fact]

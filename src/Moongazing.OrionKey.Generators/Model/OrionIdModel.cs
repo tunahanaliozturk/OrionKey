@@ -24,7 +24,8 @@ internal sealed record OrionIdModel(
         or StrategyType.GuidV7
         or StrategyType.Ksuid
         or StrategyType.ObjectId
-        or StrategyType.SequentialGuid;
+        or StrategyType.SequentialGuid
+        or StrategyType.MonotonicHex;
 
     /// <summary>The fully-qualified C# keyword/type of the underlying value.</summary>
     public string ValueKeyword => ValueType switch

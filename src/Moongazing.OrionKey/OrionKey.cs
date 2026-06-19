@@ -146,6 +146,21 @@ public static class OrionKey
         return id;
     }
 
+    /// <summary>Generates a new monotonic, time-ordered 32-character lowercase-hex id string.</summary>
+    public static string NewMonotonicHex()
+    {
+        lock (Gate)
+        {
+            if (deterministic is not null)
+            {
+                return (++deterministic.MonotonicHex).ToString("x32", System.Globalization.CultureInfo.InvariantCulture);
+            }
+        }
+        var id = MonotonicHexFactory.NewMonotonicHex();
+        OrionKeyDiagnostics.RecordGenerated("monotonichex", options.EnableMetrics);
+        return id;
+    }
+
     /// <summary>Generates a new sequential GUID.</summary>
     public static Guid NewSequentialGuid()
     {
@@ -230,5 +245,6 @@ public static class OrionKey
         public long Ksuid;
         public long ObjectId;
         public long SequentialGuid;
+        public long MonotonicHex;
     }
 }

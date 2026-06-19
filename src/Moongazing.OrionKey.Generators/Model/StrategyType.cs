@@ -12,4 +12,5 @@ internal enum StrategyType
     Ksuid,
     ObjectId,
     SequentialGuid,
+    MonotonicHex,
 }

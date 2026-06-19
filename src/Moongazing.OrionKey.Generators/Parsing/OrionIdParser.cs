@@ -229,6 +229,7 @@ internal static class OrionIdParser
             "Moongazing.OrionKey.Ksuid" => StrategyType.Ksuid,
             "Moongazing.OrionKey.ObjectId" => StrategyType.ObjectId,
             "Moongazing.OrionKey.SequentialGuid" => StrategyType.SequentialGuid,
+            "Moongazing.OrionKey.MonotonicHex" => StrategyType.MonotonicHex,
             _ => StrategyType.None,
         };
         return strategy != StrategyType.None;
@@ -245,6 +246,7 @@ internal static class OrionIdParser
         StrategyType.Ksuid => value == ValueType.String,
         StrategyType.ObjectId => value == ValueType.String,
         StrategyType.SequentialGuid => value == ValueType.Guid,
+        StrategyType.MonotonicHex => value == ValueType.String,
         _ => false,
     };
 }

@@ -12,4 +12,5 @@ namespace Moongazing.OrionKey.AotSample;
 [JsonSerializable(typeof(AccountId))]
 [JsonSerializable(typeof(EventId))]
 [JsonSerializable(typeof(DocumentId))]
+[JsonSerializable(typeof(TraceId))]
 internal sealed partial class SampleJsonContext : JsonSerializerContext;
