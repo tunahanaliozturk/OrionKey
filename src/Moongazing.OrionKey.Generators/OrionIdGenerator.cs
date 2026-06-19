@@ -169,6 +169,11 @@ predicate: static (node, _) => node is StructDeclarationSyntax or RecordDeclarat
         // that without copying.
         var list = (IReadOnlyList<OrionIdModel>)models.AsImmutableArray();
 
+        // System.Text.Json is part of the BCL, so the aggregate converter factory + options
+        // registrar are emitted unconditionally (no IntegrationFlags gate). This is the
+        // reflection-free, NativeAOT-friendly source-generation path.
+        spc.AddSource("OrionKeyJsonRegistrar.g.cs", Emit.RegistrationEmitter.EmitSystemTextJson(list));
+
         if (flags.HasDapper)
         {
             spc.AddSource("OrionKeyDapperRegistrar.g.cs", Emit.RegistrationEmitter.EmitDapper(list));

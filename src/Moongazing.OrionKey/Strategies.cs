@@ -23,3 +23,13 @@ public readonly struct ObjectId;
 
 /// <summary>Strategy marker: index-friendly sequential GUIDs (sortable). Pairs with <see cref="System.Guid"/>.</summary>
 public readonly struct SequentialGuid;
+
+/// <summary>
+/// Strategy marker: 32-character lowercase-hex, time-ordered ids (sortable, monotonic).
+/// A 48-bit millisecond Unix timestamp followed by 80 bits of randomness, rendered as 32
+/// lowercase hex characters. Because the layout is big-endian and the alphabet (<c>0-9a-f</c>)
+/// sorts in byte order, ordinal string comparison equals chronological order, and ids minted
+/// within the same millisecond are strictly increasing within a process. Pairs with
+/// <see cref="string"/>.
+/// </summary>
+public readonly struct MonotonicHex;

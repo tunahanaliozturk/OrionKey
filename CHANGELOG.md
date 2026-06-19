@@ -4,6 +4,25 @@ All notable changes to OrionKey are documented in this file. The format is based
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2026-06-19
+
+### Added
+
+#### System.Text.Json source-generation path (reflection-free, AOT/trimming friendly)
+
+The generator now emits, once per consumer assembly, an aggregate System.Text.Json wiring that complements the per-id `JsonConverter<T>` (which each generated id already carries via `[JsonConverter]`):
+
+- `OrionKeyJsonConverterFactory` — a reflection-free `JsonConverterFactory` whose `CanConvert`/`CreateConverter` resolve every `[OrionId]` type in the assembly through a compile-time `typeToConvert` switch. No `MakeGenericType`, no runtime reflection, so it is NativeAOT- and trimming-safe.
+- `OrionKeyJsonRegistrar.AddTo(JsonSerializerOptions)` — registers every generated id converter on the supplied options in a single call. Combined with a `JsonSerializerContext` constructed over those options (`new MyContext(options)`), id values serialize/deserialize through the source-generation metadata path while still emitting the bare scalar (string/number) shape, with no per-id `Converters.Add` boilerplate.
+
+The bundled NativeAOT sample now wires its `JsonSerializerContext` through `OrionKeyJsonRegistrar.AddTo` instead of hand-registering each converter.
+
+#### `MonotonicHex` id strategy — sortable, monotonic, 32-char lowercase hex
+
+- New strategy marker `MonotonicHex` (`[OrionId<string, MonotonicHex>]`): a 48-bit millisecond Unix timestamp (big-endian) followed by 80 bits of randomness, rendered as 32 lowercase hex characters. Ordinal string comparison equals chronological order, and ids minted within the same millisecond are strictly increasing within a process (the randomness block is incremented rather than re-drawn), so a sequence is monotonic. Clock regressions hold the previous timestamp to preserve ordering.
+- Runtime factory `MonotonicHexFactory.NewMonotonicHex()` and `OrionKey` facade member `NewMonotonicHex()`.
+- The generated id gets creation-ordered `CompareTo` (ordinal) and is treated as sortable; it participates in the JSON, parse, and EF/Dapper/Mongo/OpenAPI surfaces like the other string strategies.
+
 ## [0.5.31] - 2026-06-17
 
 ### Changed

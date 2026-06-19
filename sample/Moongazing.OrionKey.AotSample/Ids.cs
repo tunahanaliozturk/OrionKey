@@ -11,3 +11,4 @@ namespace Moongazing.OrionKey.AotSample;
 [OrionId<string, Cuid2>]               public readonly partial struct AccountId;
 [OrionId<string, Ksuid>]               public readonly partial struct EventId;
 [OrionId<string, ObjectId>]            public readonly partial struct DocumentId;
+[OrionId<string, MonotonicHex>]        public readonly partial struct TraceId;

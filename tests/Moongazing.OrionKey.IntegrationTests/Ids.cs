@@ -10,3 +10,4 @@ namespace Moongazing.OrionKey.IntegrationTests;
 [OrionId<string, Ksuid>]            public readonly partial struct EventId;
 [OrionId<string, ObjectId>]         public readonly partial struct DocumentId;
 [OrionId<System.Guid, SequentialGuid>] public readonly partial struct InvoiceId;
+[OrionId<string, MonotonicHex>]     public readonly partial struct TraceId;

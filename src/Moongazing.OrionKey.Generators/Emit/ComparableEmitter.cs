@@ -52,7 +52,7 @@ internal static class ComparableEmitter
             "global::Moongazing.OrionKey.OrionGuidComparer.CompareV7(Value, other.Value)",
         StrategyType.SequentialGuid =>
             "global::Moongazing.OrionKey.OrionGuidComparer.CompareSequential(Value, other.Value)",
-        StrategyType.Ulid or StrategyType.Ksuid or StrategyType.ObjectId =>
+        StrategyType.Ulid or StrategyType.Ksuid or StrategyType.ObjectId or StrategyType.MonotonicHex =>
             "global::System.String.CompareOrdinal(Value, other.Value)",
         StrategyType.Snowflake => "Value.CompareTo(other.Value)",
         // v0.5.26: all other ids fall back to a deterministic value-based comparison.
