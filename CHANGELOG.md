@@ -4,6 +4,12 @@ All notable changes to OrionKey are documented in this file. The format is based
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.2] - 2026-06-20
+
+### Performance
+
+- `MonotonicHexFactory.NewMonotonicHex()` and `ObjectIdFactory.NewObjectId()` now render their lowercase-hex output in a single allocation via a shared `HexFormat.ToLowerHex` helper, replacing `Convert.ToHexString(bytes).ToLowerInvariant()` which allocated an intermediate uppercase string. Output is byte-identical. A throwaway BenchmarkDotNet run measured roughly 26% faster for the 16-byte MonotonicHex path and 45% faster for the 12-byte ObjectId path, each halving allocations per id (176 B to 88 B and 144 B to 72 B respectively).
+
 ## [0.6.1] - 2026-06-20
 
 ### Changed
