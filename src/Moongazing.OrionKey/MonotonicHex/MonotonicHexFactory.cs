@@ -59,9 +59,10 @@ public static class MonotonicHexFactory
             LastRandomness.CopyTo(bytes.Slice(6));
         }
 
-        // Convert.ToHexString is available on net8+ and is used with ToLowerInvariant() so the
-        // output is deterministic regardless of multi-target / culture (no net9+-only API).
-        return Convert.ToHexString(bytes).ToLowerInvariant();
+        // Render lowercase hex in a single allocation (see HexFormat); the output is
+        // byte-identical to Convert.ToHexString(bytes).ToLowerInvariant() but avoids the
+        // intermediate uppercase string on this hot path.
+        return HexFormat.ToLowerHex(bytes);
     }
 
     private static void IncrementBigEndian(byte[] bytes)

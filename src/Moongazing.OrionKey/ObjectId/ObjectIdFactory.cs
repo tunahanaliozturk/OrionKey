@@ -28,7 +28,7 @@ public static class ObjectIdFactory
         bytes[9] = (byte)(next >> 16);
         bytes[10] = (byte)(next >> 8);
         bytes[11] = (byte)next;
-        return Convert.ToHexString(bytes).ToLowerInvariant();
+        return HexFormat.ToLowerHex(bytes);
     }
 
     private static byte[] CreateProcessRandom()
