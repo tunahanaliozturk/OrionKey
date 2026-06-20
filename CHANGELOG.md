@@ -4,6 +4,12 @@ All notable changes to OrionKey are documented in this file. The format is based
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.1] - 2026-06-20
+
+### Changed
+
+- The diagnostics meter version is now derived once from the assembly informational version instead of a hardcoded literal, so it always tracks the package version.
+
 ## [0.6.0] - 2026-06-19
 
 ### Added

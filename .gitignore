@@ -6,3 +6,4 @@ artifacts/
 BenchmarkDotNet.Artifacts/
 .vs/
 [Tt]est[Rr]esults/
+.claude/
