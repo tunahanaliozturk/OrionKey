@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using System.Reflection;
 
 namespace Moongazing.OrionKey;
 
@@ -9,7 +10,7 @@ public static class OrionKeyDiagnostics
     /// <summary>The OrionKey meter name.</summary>
     public const string MeterName = "Moongazing.OrionKey";
 
-    private static readonly Meter Meter = new(MeterName, "0.4.0");
+    private static readonly Meter Meter = new(MeterName, MeterVersion.Value);
     private static readonly Counter<long> IdsGenerated =
         Meter.CreateCounter<long>("orionkey.ids.generated");
 
@@ -34,5 +35,25 @@ public static class OrionKeyDiagnostics
                 "In a multi-instance deployment, set ORIONKEY_WORKER_ID or call OrionKey.Configure " +
                 "to assign a unique id per instance and avoid id collisions.");
         }
+    }
+}
+
+/// <summary>Derives the diagnostics meter version once from the assembly informational version.</summary>
+internal static class MeterVersion
+{
+    /// <summary>The meter version string, derived from the owning assembly's version.</summary>
+    public static string Value { get; } = Resolve();
+
+    private static string Resolve()
+    {
+        var asm = typeof(MeterVersion).Assembly;
+        var info = asm.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+        if (!string.IsNullOrEmpty(info))
+        {
+            var plus = info.IndexOf('+');
+            return plus >= 0 ? info[..plus] : info;
+        }
+
+        return asm.GetName().Version?.ToString(3) ?? "0.0.0";
     }
 }
