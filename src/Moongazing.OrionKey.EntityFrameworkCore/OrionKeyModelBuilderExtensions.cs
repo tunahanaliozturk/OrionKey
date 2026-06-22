@@ -60,7 +60,13 @@ public static class OrionKeyModelBuilderExtensions
 
         foreach (var clrProperty in clrProperties)
         {
-            if (!OrionKeyMetadata.HasOrionIdAttribute(clrProperty.PropertyType))
+            // A nullable id property (OrderId?) has CLR type Nullable<OrderId>, which carries no
+            // OrionIdAttribute and is not itself an OrionKey id. Unwrap to the underlying id type so
+            // both the recognition test and the converter are driven by OrderId, not Nullable<OrderId>;
+            // otherwise optional FK/id properties are silently skipped and never get a converter.
+            var idType = Nullable.GetUnderlyingType(clrProperty.PropertyType) ?? clrProperty.PropertyType;
+
+            if (!OrionKeyMetadata.HasOrionIdAttribute(idType))
             {
                 continue;
             }
@@ -74,8 +80,10 @@ public static class OrionKeyModelBuilderExtensions
                 continue;
             }
 
+            // AddProperty uses the original PropertyInfo, so a nullable id stays a nullable (optional)
+            // property; EF Core composes the non-nullable id->primitive converter onto it.
             var property = existing ?? entityType.AddProperty(clrProperty);
-            property.SetValueConverter(OrionKeyValueConverterFactory.Create(clrProperty.PropertyType));
+            property.SetValueConverter(OrionKeyValueConverterFactory.Create(idType));
         }
     }
 

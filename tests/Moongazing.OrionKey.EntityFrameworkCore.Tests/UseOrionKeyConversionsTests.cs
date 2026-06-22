@@ -153,4 +153,94 @@ public sealed class UseOrionKeyConversionsTests
             Assert.Equal("target", found.Description);
         }
     }
+
+    // Optional (nullable) id property. Its CLR type is Nullable<CustomerId>, which carries no
+    // OrionIdAttribute; the convention must unwrap it to CustomerId so the converter is still applied.
+    private sealed class OrderWithOptionalCustomer
+    {
+        public OrderId Id { get; set; }
+        public CustomerId? CustomerId { get; set; }
+        public string Description { get; set; } = "";
+    }
+
+    private sealed class OptionalIdDbContext(DbContextOptions<OptionalIdDbContext> options)
+        : DbContext(options)
+    {
+        public DbSet<OrderWithOptionalCustomer> Orders => Set<OrderWithOptionalCustomer>();
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<OrderWithOptionalCustomer>().HasKey(o => o.Id);
+
+            // Same single call; it must reach the nullable CustomerId? property too.
+            modelBuilder.UseOrionKeyConversions();
+        }
+    }
+
+    private static async Task<(SqliteConnection Connection, DbContextOptions<OptionalIdDbContext> Options)>
+        OpenOptionalAsync()
+    {
+        var connection = new SqliteConnection("Filename=:memory:");
+        await connection.OpenAsync();
+        var options = new DbContextOptionsBuilder<OptionalIdDbContext>()
+            .UseSqlite(connection)
+            .Options;
+        return (connection, options);
+    }
+
+    [Fact]
+    public async Task Convention_AppliesConverter_ToNullableId_RoundTrippingNullAndValue()
+    {
+        var (connection, options) = await OpenOptionalAsync();
+        await using var _ = connection;
+
+        var withCustomerId = OrderId.New();
+        var withoutCustomerId = OrderId.New();
+        var customer = CustomerId.New();
+
+        await using (var ctx = new OptionalIdDbContext(options))
+        {
+            await ctx.Database.EnsureCreatedAsync();
+            ctx.Orders.Add(new OrderWithOptionalCustomer
+            {
+                Id = withCustomerId,
+                CustomerId = customer,
+                Description = "has-customer",
+            });
+            ctx.Orders.Add(new OrderWithOptionalCustomer
+            {
+                Id = withoutCustomerId,
+                CustomerId = null,
+                Description = "no-customer",
+            });
+            await ctx.SaveChangesAsync();
+        }
+
+        await using (var ctx = new OptionalIdDbContext(options))
+        {
+            var present = await ctx.Orders.SingleAsync(o => o.Id == withCustomerId);
+            Assert.Equal(customer, present.CustomerId);
+
+            var absent = await ctx.Orders.SingleAsync(o => o.Id == withoutCustomerId);
+            Assert.Null(absent.CustomerId);
+        }
+
+        // The non-null row must store the underlying primitive (INTEGER), proving the converter ran on
+        // the nullable property; the null row must persist as SQL NULL, not a converted default.
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText =
+                "SELECT CustomerId FROM Orders WHERE Description = 'has-customer' LIMIT 1";
+            var stored = await command.ExecuteScalarAsync();
+            Assert.Equal(customer.Value, Assert.IsType<long>(stored));
+        }
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText =
+                "SELECT CustomerId FROM Orders WHERE Description = 'no-customer' LIMIT 1";
+            var stored = await command.ExecuteScalarAsync();
+            Assert.True(stored is null or System.DBNull);
+        }
+    }
 }
