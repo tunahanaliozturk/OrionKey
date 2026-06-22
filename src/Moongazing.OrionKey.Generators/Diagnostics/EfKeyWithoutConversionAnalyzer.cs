@@ -28,6 +28,10 @@ namespace Moongazing.OrionKey.Generators.Diagnostics;
 ///   <item>If no configuration class exists at all, we do not warn - the user may be wiring
 ///         conversions through model-builder conventions we cannot reach. This keeps false
 ///         positives at zero in non-trivial setups.</item>
+///   <item>If a model-wide registration (<c>modelBuilder.UseOrionKeyConversions()</c> or
+///         <c>configurationBuilder.ConfigureOrionKeyConversions(...)</c>) is present anywhere in the
+///         compilation, every OrionId property is covered at once and we do not warn - a per-property
+///         <c>HasConversion</c> is not required alongside it.</item>
 /// </list>
 /// </remarks>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
@@ -67,6 +71,15 @@ public sealed class EfKeyWithoutConversionAnalyzer : DiagnosticAnalyzer
         var entityTypes = new ConcurrentDictionary<INamedTypeSymbol, byte>(SymbolEqualityComparer.Default);
         var convertedProperties = new ConcurrentDictionary<(INamedTypeSymbol Entity, string Property), byte>();
         var configurationCounter = new ConfigurationCounter();
+
+        // A single model-wide registration (modelBuilder.UseOrionKeyConversions() in OnModelCreating, or
+        // configurationBuilder.ConfigureOrionKeyConversions(...) in ConfigureConventions) wires the
+        // converter for every [OrionId] property on the model. When one is present anywhere in the
+        // compilation, no per-property HasConversion is required, so ORIONKEY006 must not fire.
+        var modelWideRegistration = new ConfigurationCounter();
+        start.RegisterSyntaxNodeAction(
+            nodeCtx => DetectModelWideRegistration(nodeCtx, modelWideRegistration),
+            SyntaxKind.InvocationExpression);
 
         start.RegisterSymbolAction(symbolCtx =>
         {
@@ -111,6 +124,13 @@ public sealed class EfKeyWithoutConversionAnalyzer : DiagnosticAnalyzer
 
         start.RegisterCompilationEndAction(end =>
         {
+            // A model-wide registration covers every OrionId property at once, so a per-property
+            // HasConversion is not needed. Stay silent across the whole compilation when one is present.
+            if (modelWideRegistration.HasAny)
+            {
+                return;
+            }
+
             // If no IEntityTypeConfiguration<T> exists anywhere, conversions may be wired
             // via model-builder conventions we cannot reach. Stay silent to avoid noise.
             if (!configurationCounter.HasAny)
@@ -219,6 +239,55 @@ public sealed class EfKeyWithoutConversionAnalyzer : DiagnosticAnalyzer
             }
         }
     }
+
+    /// <summary>
+    /// Recognizes a model-wide OrionKey converter registration -
+    /// <c>UseOrionKeyConversions()</c> or <c>ConfigureOrionKeyConversions(...)</c> - and records its
+    /// presence. Detection is by method name (mirroring the syntactic name match used for
+    /// <c>HasConversion</c> / <c>HasOrionKeyConversion</c>); when the symbol binds, the call is
+    /// additionally required to resolve to OrionKey's EF Core extensions namespace so an unrelated
+    /// method of the same name does not suppress the diagnostic. When the symbol cannot be resolved
+    /// (the OrionKey EF Core assembly is not referenced by this compilation), the name match alone is
+    /// honored.
+    /// </summary>
+    private static void DetectModelWideRegistration(
+        SyntaxNodeAnalysisContext context,
+        ConfigurationCounter sink)
+    {
+        if (context.Node is not InvocationExpressionSyntax invocation)
+        {
+            return;
+        }
+
+        var calledName = invocation.Expression switch
+        {
+            MemberAccessExpressionSyntax member => member.Name.Identifier.ValueText,
+            MemberBindingExpressionSyntax binding => binding.Name.Identifier.ValueText,
+            IdentifierNameSyntax identifier => identifier.Identifier.ValueText,
+            _ => null,
+        };
+
+        if (calledName is not "UseOrionKeyConversions" and not "ConfigureOrionKeyConversions")
+        {
+            return;
+        }
+
+        // When the call binds to a symbol, require it to live in OrionKey's EF Core extensions
+        // namespace. If it does not bind (the EF Core package is not referenced here), the highly
+        // specific name match stands on its own.
+        var symbol = context.SemanticModel.GetSymbolInfo(invocation, context.CancellationToken).Symbol;
+        if (symbol is IMethodSymbol method
+            && !IsOrionKeyEntityFrameworkCoreExtension(method.ContainingType))
+        {
+            return;
+        }
+
+        sink.Mark();
+    }
+
+    private static bool IsOrionKeyEntityFrameworkCoreExtension(INamedTypeSymbol? containingType)
+        => containingType?.ContainingNamespace?.ToDisplayString()
+            == "Moongazing.OrionKey.EntityFrameworkCore";
 
     private static IEnumerable<string> ExtractTargetPropertyNames(ExpressionSyntax receiver)
     {

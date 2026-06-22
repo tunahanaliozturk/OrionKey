@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Moongazing.OrionKey.Generat
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Moongazing.OrionKey.Testing", "src\Moongazing.OrionKey.Testing\Moongazing.OrionKey.Testing.csproj", "{12E35F10-2BF3-4FDE-8E88-EDD507660F2A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Moongazing.OrionKey.EntityFrameworkCore", "src\Moongazing.OrionKey.EntityFrameworkCore\Moongazing.OrionKey.EntityFrameworkCore.csproj", "{2442077E-214A-4F80-A4EC-AA09106EDA84}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{0AB3BF05-4346-4AA6-1389-037BE0695223}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Moongazing.OrionKey.Tests", "tests\Moongazing.OrionKey.Tests\Moongazing.OrionKey.Tests.csproj", "{8AF64FE2-24C7-4DE4-B75E-7B27DA530EED}"
@@ -18,6 +20,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Moongazing.OrionKey.Generators.Tests", "tests\Moongazing.OrionKey.Generators.Tests\Moongazing.OrionKey.Generators.Tests.csproj", "{5E87FFE9-8C1F-4B51-9379-D1D130C0741E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Moongazing.OrionKey.IntegrationTests", "tests\Moongazing.OrionKey.IntegrationTests\Moongazing.OrionKey.IntegrationTests.csproj", "{4AF7619D-A31A-4FCE-B75C-0F843CA8A81A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Moongazing.OrionKey.EntityFrameworkCore.Tests", "tests\Moongazing.OrionKey.EntityFrameworkCore.Tests\Moongazing.OrionKey.EntityFrameworkCore.Tests.csproj", "{85BA57B6-03AD-444D-9220-83F27B9D264E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Moongazing.OrionKey.Testing.Tests", "tests\Moongazing.OrionKey.Testing.Tests\Moongazing.OrionKey.Testing.Tests.csproj", "{A09ECF27-3BD8-4981-91E3-EEA8FF8D6294}"
 EndProject
@@ -191,6 +195,30 @@ Global
 		{3046B035-000B-4993-911B-8F14F0A4B921}.Release|x64.Build.0 = Release|Any CPU
 		{3046B035-000B-4993-911B-8F14F0A4B921}.Release|x86.ActiveCfg = Release|Any CPU
 		{3046B035-000B-4993-911B-8F14F0A4B921}.Release|x86.Build.0 = Release|Any CPU
+		{2442077E-214A-4F80-A4EC-AA09106EDA84}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2442077E-214A-4F80-A4EC-AA09106EDA84}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2442077E-214A-4F80-A4EC-AA09106EDA84}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{2442077E-214A-4F80-A4EC-AA09106EDA84}.Debug|x64.Build.0 = Debug|Any CPU
+		{2442077E-214A-4F80-A4EC-AA09106EDA84}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{2442077E-214A-4F80-A4EC-AA09106EDA84}.Debug|x86.Build.0 = Debug|Any CPU
+		{2442077E-214A-4F80-A4EC-AA09106EDA84}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2442077E-214A-4F80-A4EC-AA09106EDA84}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2442077E-214A-4F80-A4EC-AA09106EDA84}.Release|x64.ActiveCfg = Release|Any CPU
+		{2442077E-214A-4F80-A4EC-AA09106EDA84}.Release|x64.Build.0 = Release|Any CPU
+		{2442077E-214A-4F80-A4EC-AA09106EDA84}.Release|x86.ActiveCfg = Release|Any CPU
+		{2442077E-214A-4F80-A4EC-AA09106EDA84}.Release|x86.Build.0 = Release|Any CPU
+		{85BA57B6-03AD-444D-9220-83F27B9D264E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{85BA57B6-03AD-444D-9220-83F27B9D264E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{85BA57B6-03AD-444D-9220-83F27B9D264E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{85BA57B6-03AD-444D-9220-83F27B9D264E}.Debug|x64.Build.0 = Debug|Any CPU
+		{85BA57B6-03AD-444D-9220-83F27B9D264E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{85BA57B6-03AD-444D-9220-83F27B9D264E}.Debug|x86.Build.0 = Debug|Any CPU
+		{85BA57B6-03AD-444D-9220-83F27B9D264E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{85BA57B6-03AD-444D-9220-83F27B9D264E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{85BA57B6-03AD-444D-9220-83F27B9D264E}.Release|x64.ActiveCfg = Release|Any CPU
+		{85BA57B6-03AD-444D-9220-83F27B9D264E}.Release|x64.Build.0 = Release|Any CPU
+		{85BA57B6-03AD-444D-9220-83F27B9D264E}.Release|x86.ActiveCfg = Release|Any CPU
+		{85BA57B6-03AD-444D-9220-83F27B9D264E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -208,5 +236,7 @@ Global
 		{43F8F0D0-8225-46B6-972C-63D6BD579D14} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{3F54FC22-39FB-4D15-8EA6-7D0F23C0FC38} = {66320409-64EC-F7C5-3DEF-65E7510DAAD1}
 		{3046B035-000B-4993-911B-8F14F0A4B921} = {A39C23D2-F2C0-258D-165A-CF1E7FEE6E7B}
+		{2442077E-214A-4F80-A4EC-AA09106EDA84} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+		{85BA57B6-03AD-444D-9220-83F27B9D264E} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 	EndGlobalSection
 EndGlobal
