@@ -4,6 +4,21 @@ All notable changes to OrionKey are documented in this file. The format is based
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2026-06-22
+
+### Added
+
+#### EF Core value-converter ergonomics (`OrionKey.EntityFrameworkCore`)
+
+A new sub-package, `OrionKey.EntityFrameworkCore`, registers OrionKey value converters across a whole model in one call, so consumers stop wiring `HasOrionKeyConversion()` property by property. It complements, and does not replace, the per-id `{Name}ValueConverter` and the per-property `HasOrionKeyConversion()` extension the source generator has emitted in each id's namespace since `0.5.10`.
+
+- `modelBuilder.UseOrionKeyConversions()` walks the model and wires the converter for every `[OrionId]` property discovered on it. Call once at the end of `OnModelCreating`. An id property that already carries a converter (configured explicitly, or by an earlier pass) is left untouched, so explicit configuration always wins over the convention.
+- `configurationBuilder.ConfigureOrionKeyConversions(params Assembly[])` is the pre-convention (`ConfigureConventions`) counterpart: it locates the generated `{Name}ValueConverter` for every `[OrionId]` type in the supplied assemblies (defaulting to the calling assembly) and registers it. Reflective by nature, so it is documented as non-AOT.
+- `property.HasOrionKeyConversion<TId, TValue>()` is a reflection-free, AOT- and trimming-safe per-property helper that builds the converter (`id => id.Value`, `value => new TId(value)`) over the statically-reachable id members. It is the building block to prefer under Native AOT.
+- `OrionKeyValueConverterFactory.Create<TId, TValue>()` exposes the same converter directly; a non-generic `Create(Type)` drives the model scan.
+
+The package multi-targets `net8.0`/`net9.0`/`net10.0` and depends only on `Microsoft.EntityFrameworkCore`, leaving provider choice to the consumer. The model-wide entry points are annotated `RequiresUnreferencedCode` / `RequiresDynamicCode`; the per-property generic helper is clean under the AOT and trimming analyzers.
+
 ## [0.6.2] - 2026-06-20
 
 ### Performance
