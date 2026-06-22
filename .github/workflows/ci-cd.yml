@@ -102,6 +102,7 @@ jobs:
         run: |
           dotnet pack src/Moongazing.OrionKey/Moongazing.OrionKey.csproj --no-build --configuration Release -o ./nupkgs
           dotnet pack src/Moongazing.OrionKey.Testing/Moongazing.OrionKey.Testing.csproj --no-build --configuration Release -o ./nupkgs
+          dotnet pack src/Moongazing.OrionKey.EntityFrameworkCore/Moongazing.OrionKey.EntityFrameworkCore.csproj --no-build --configuration Release -o ./nupkgs
 
       - name: Push to NuGet.org
         run: dotnet nuget push "./nupkgs/*.nupkg" --api-key "${{ secrets.NUGET }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
