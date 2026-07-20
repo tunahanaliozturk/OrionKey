@@ -46,4 +46,13 @@
     <ProjectReference Include="..\..\src\Moongazing.OrionKey.Generators\Moongazing.OrionKey.Generators.csproj"
                       OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
+  <!-- Security pin: GHSA-2m69-gcr7-jv3q (High), bundled SQLite native lib pulled transitively by EntityFrameworkCore.Sqlite. Test-only. -->
+  <ItemGroup>
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.12" />
+  </ItemGroup>
+  <!-- Security pins: GHSA-pggp-6c3x-2xmx (High, Snappier) and GHSA-6c8g-7p36-r338 (Moderate, SharpCompress), pulled transitively by MongoDB.Driver 3.0.0. Test-only. -->
+  <ItemGroup>
+    <PackageReference Include="Snappier" Version="1.3.1" />
+    <PackageReference Include="SharpCompress" Version="0.49.1" />
+  </ItemGroup>
 </Project>

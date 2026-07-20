@@ -33,4 +33,8 @@
     <ProjectReference Include="..\..\src\Moongazing.OrionKey.Generators\Moongazing.OrionKey.Generators.csproj"
                       OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
+  <!-- Security pin: GHSA-2m69-gcr7-jv3q (High), bundled SQLite native lib pulled transitively by EntityFrameworkCore.Sqlite. Test-only. -->
+  <ItemGroup>
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.12" />
+  </ItemGroup>
 </Project>

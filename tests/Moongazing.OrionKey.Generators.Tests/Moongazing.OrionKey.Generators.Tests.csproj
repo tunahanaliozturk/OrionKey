@@ -27,4 +27,9 @@
     <ProjectReference Include="..\..\src\Moongazing.OrionKey.CodeFixes\Moongazing.OrionKey.CodeFixes.csproj" />
     <ProjectReference Include="..\..\src\Moongazing.OrionKey\Moongazing.OrionKey.csproj" />
   </ItemGroup>
+  <!-- Security pins: GHSA-pggp-6c3x-2xmx (High, Snappier) and GHSA-6c8g-7p36-r338 (Moderate, SharpCompress), pulled transitively by MongoDB.Driver 3.0.0. Test-only. -->
+  <ItemGroup>
+    <PackageReference Include="Snappier" Version="1.3.1" />
+    <PackageReference Include="SharpCompress" Version="0.49.1" />
+  </ItemGroup>
 </Project>
