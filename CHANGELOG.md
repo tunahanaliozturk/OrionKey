@@ -1,8 +1,38 @@
+<!-- markdownlint-disable MD024 -->
+
 # Changelog
 
 All notable changes to OrionKey are documented in this file. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+### Security
+
+Re-arming the NuGet audit (`NuGetAuditMode=all`, un-suppressing `NU1901`–`NU1904`) surfaced
+three advisories the previous blanket suppression had hidden. **All three reach only test
+projects** — `MongoDB.Driver` and the SQLite provider are test-only dependencies, so no shipped
+OrionKey package (`OrionKey`, `OrionKey.Testing`, `OrionKey.EntityFrameworkCore`) is affected and
+no released version needs upgrading. Pinned so the repository scans clean.
+
+- **GHSA-2m69-gcr7-jv3q** (High) — `SQLitePCLRaw.lib.e_sqlite3` (2.1.6/2.1.10/2.1.11 across TFMs)
+  via `Microsoft.EntityFrameworkCore.Sqlite`. Pinned `SQLitePCLRaw.bundle_e_sqlite3` → 2.1.12 in
+  the EF Core and integration test projects.
+- **GHSA-pggp-6c3x-2xmx** (High) — `Snappier` 1.0.0 (uncatchable infinite loop decompressing a
+  malformed Snappy stream) via `MongoDB.Driver` 3.0.0. Pinned `Snappier` → 1.3.1 in the MongoDB
+  test projects.
+- **GHSA-6c8g-7p36-r338** (Moderate) — `SharpCompress` 0.30.1 via `MongoDB.Driver` 3.0.0. Pinned
+  `SharpCompress` → 0.49.1.
+
+### Changed
+
+- **NuGet audit re-armed.** `NuGetAuditMode=all` audits the whole transitive graph (default is
+  direct references only), and `NoWarn` no longer suppresses `NU1901`–`NU1904`, so advisories
+  surface in every restore. They are warnings (not errors) via `WarningsNotAsErrors` so a future
+  upstream CVE surfaces without breaking CI on an external event. It was this change that surfaced
+  the three advisories above — an earlier `dotnet list --vulnerable` sweep had reported this repo
+  clean and missed all three.
 
 ## [0.7.0] - 2026-07-20
 
