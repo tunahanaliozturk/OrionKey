@@ -7,6 +7,11 @@ on:
     branches: [ main, master ]
   release:
     types: [ published ]
+  # Manual publish from the default branch. Needed to ship a package that was built for an
+  # existing release but omitted from its publish (e.g. a new sub-package added after a
+  # hand-maintained pack list). The push steps use --skip-duplicate, so re-running is safe:
+  # already-published versions are skipped and only the missing package is pushed.
+  workflow_dispatch:
 
 env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
@@ -78,7 +83,7 @@ jobs:
   publish:
     needs: [build-and-test, aot-publish]
     runs-on: ubuntu-latest
-    if: github.event_name == 'release'
+    if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
     permissions:
       packages: write
       contents: read
