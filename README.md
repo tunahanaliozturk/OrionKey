@@ -243,9 +243,10 @@ OrionKey ships in phased minor releases on the way to 1.0:
 - **`0.3.0` — Integration emitters** *(Done, 2026-05-23)* — conditional emitters for Dapper, Newtonsoft.Json, MongoDB, and Swashbuckle/OpenAPI, plus per-library aggregate registrars.
 - **`0.3.1` — Logo refresh** *(Done, 2026-05-23)* — new minimalist family-style key logo in Moongazing indigo; no code changes.
 - **`0.4.0` — Native AOT & trimming** *(Done)* — full `PublishAot`/`PublishTrimmed` compatibility with a verified AOT sample app and CI publish job.
-- **`0.5.0` — Analyzer, code-fix, stabilization** *(Planned, Q4 2026)* — new diagnostics (`ORIONKEY006`–`008`), code-fix providers, source-generator performance pass.
+- **`0.5.0` — Analyzer, code-fix, stabilization** *(Done, 2026-06-01)* — new diagnostics (`ORIONKEY006`–`008`), code-fix providers, source-generator performance pass.
 - **`0.6.0` — Source-gen JSON path & `MonotonicHex`** *(Done, 2026-06-19)* — reflection-free `System.Text.Json` registrar (`OrionKeyJsonRegistrar.AddTo`) for the AOT source-generation path, and the sortable, monotonic `MonotonicHex` string strategy.
-- **`0.7.0` — Composite IDs & extra emitters** *(Planned, Q1 2027)* — multi-value tuple IDs, `IUtf8SpanFormattable`/`IUtf8SpanParsable`, `Tsid`/`Xid` strategies.
+- **`0.7.0` — EF Core value-converter ergonomics** *(Done, 2026-07-20)* — a new `OrionKey.EntityFrameworkCore` sub-package whose `UseOrionKeyConversions()` wires the generated value converters across a whole model in one call.
+- **Composite IDs & extra emitters** *(Planned)* — multi-value tuple IDs, `IUtf8SpanFormattable`/`IUtf8SpanParsable`, `Tsid`/`Xid` strategies.
 - **`1.0.0` — Stable API** *(Planned, Q2 2027)* — public-type and emitter-contract freeze, LTS window, `net8.0` drop decision.
 
 Full roadmap with *Considered* and *Out of scope* sections lives in
