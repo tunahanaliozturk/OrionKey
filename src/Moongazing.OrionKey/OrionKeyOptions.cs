@@ -12,6 +12,6 @@ public sealed class OrionKeyOptions
     /// <summary>Snowflake epoch. Defaults to 2025-01-01 UTC.</summary>
     public DateTime SnowflakeEpoch { get; set; } = new(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
-    /// <summary>When true, the <c>orionkey.ids.generated</c> meter counter is recorded. Default false.</summary>
+    /// <summary>When true, the <c>orion.key.ids.generated</c> meter counter is recorded. Default false.</summary>
     public bool EnableMetrics { get; set; }
 }

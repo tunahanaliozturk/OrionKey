@@ -8,6 +8,8 @@ All notable changes to OrionKey are documented in this file. The format is based
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-07-28
+
 ### Security
 
 Re-arming the NuGet audit (`NuGetAuditMode=all`, un-suppressing `NU1901`–`NU1904`) surfaced
@@ -27,6 +29,15 @@ no released version needs upgrading. Pinned so the repository scans clean.
 
 ### Changed
 
+- **Adopted the family OpenTelemetry metric-naming convention.** The generated-ids counter was
+  renamed from `orionkey.ids.generated` to `orion.key.ids.generated`, matching the `orion.<component>.<instrument>`
+  convention the rest of the Orion family now uses. The meter name (`Moongazing.OrionKey`), the
+  `strategy` tag, and the opt-in `RecordGenerated` API are unchanged. OrionKey follows the naming
+  convention by string rather than referencing `Orion.Abstractions`, so the runtime package stays
+  dependency-free and Native-AOT-compatible.
+
+  **Breaking (telemetry only):** update any dashboard/alert on `orionkey.ids.generated` to
+  `orion.key.ids.generated`.
 - **NuGet audit re-armed.** `NuGetAuditMode=all` audits the whole transitive graph (default is
   direct references only), and `NoWarn` no longer suppresses `NU1901`–`NU1904`, so advisories
   surface in every restore. They are warnings (not errors) via `WarningsNotAsErrors` so a future
