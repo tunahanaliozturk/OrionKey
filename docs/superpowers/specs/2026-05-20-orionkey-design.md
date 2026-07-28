@@ -198,7 +198,7 @@ ULID (~150 lines) and NanoId (~60 lines) are implemented in-package. OrionKey ta
 
 ID generation is a hot path; unconditional metrics are unwanted overhead. OrionKey exposes:
 
-- A `System.Diagnostics.Metrics.Meter` named `Moongazing.OrionKey` with one opt-in counter `orionkey.ids.generated` tagged by `strategy`. The counter is only wired when the consumer enables it via `OrionKey.Configure(o => o.EnableMetrics = true)`; default off.
+- A `System.Diagnostics.Metrics.Meter` named `Moongazing.OrionKey` with one opt-in counter `orion.key.ids.generated` tagged by `strategy`. The counter is only wired when the consumer enables it via `OrionKey.Configure(o => o.EnableMetrics = true)`; default off.
 - A `TraceSource`/`ILogger`-agnostic one-time warning channel for the Snowflake auto-worker-id case (§6), implemented over `System.Diagnostics`.
 
 No `ActivitySource` — there is no span-worthy operation in ID minting.

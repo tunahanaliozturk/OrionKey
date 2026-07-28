@@ -12,7 +12,7 @@ public static class OrionKeyDiagnostics
 
     private static readonly Meter Meter = new(MeterName, MeterVersion.Value);
     private static readonly Counter<long> IdsGenerated =
-        Meter.CreateCounter<long>("orionkey.ids.generated");
+        Meter.CreateCounter<long>("orion.key.ids.generated");
 
     private static int workerIdWarningWritten;
 
