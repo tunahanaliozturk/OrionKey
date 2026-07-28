@@ -380,7 +380,7 @@ public sealed class OrionKeyOptions
     /// <summary>Snowflake epoch. Defaults to 2025-01-01 UTC.</summary>
     public DateTime SnowflakeEpoch { get; set; } = new(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
-    /// <summary>When true, the <c>orionkey.ids.generated</c> meter counter is recorded. Default false.</summary>
+    /// <summary>When true, the <c>orion.key.ids.generated</c> meter counter is recorded. Default false.</summary>
     public bool EnableMetrics { get; set; }
 }
 ```
@@ -401,7 +401,7 @@ public static class OrionKeyDiagnostics
 
     private static readonly Meter Meter = new(MeterName, "0.1.0");
     private static readonly Counter<long> IdsGenerated =
-        Meter.CreateCounter<long>("orionkey.ids.generated");
+        Meter.CreateCounter<long>("orion.key.ids.generated");
 
     private static int workerIdWarningWritten;
 
