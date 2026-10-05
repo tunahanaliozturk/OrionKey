@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation
+    url: https://github.com/tunahanaliozturk/OrionKey#readme
+    about: The README and the package READMEs document the real behaviour of OrionKey, OrionKey.EntityFrameworkCore and OrionKey.Testing. Read them before asking "how do I ...".
+  - name: Roadmap
+    url: https://github.com/tunahanaliozturk/OrionKey/blob/main/docs/ROADMAP.md
+    about: What is planned next. Check it before opening a feature request.
+  - name: Security vulnerability
+    url: https://github.com/tunahanaliozturk/OrionKey/blob/main/SECURITY.md
+    about: Do not file a public issue. Report it privately as described in SECURITY.md.

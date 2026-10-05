@@ -1,0 +1,134 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="870" viewBox="0 0 1200 870">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+    <marker id="arrow-fail" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#dc2626"/>
+    </marker>
+  </defs>
+  <style>
+    text { font-family: "Segoe UI", Inter, "Helvetica Neue", Arial, sans-serif; fill: #1e1b4b; }
+    .title { font-size: 24px; font-weight: 700; }
+    .subtitle { font-size: 14px; fill: #475569; }
+    .label { font-size: 15px; font-weight: 600; }
+    .small { font-size: 12.5px; fill: #475569; }
+    .code { font-family: "Cascadia Code", Consolas, "SF Mono", monospace; font-size: 13px; fill: #3730a3; }
+    .edge { font-size: 12.5px; fill: #334155; }
+    .step { fill: #eef2ff; stroke: #4f46e5; stroke-width: 2; }
+    .ext { fill: #f0f9ff; stroke: #0284c7; stroke-width: 2; }
+    .ok { fill: #ecfdf5; stroke: #059669; stroke-width: 2; }
+    .fail { fill: #fef2f2; stroke: #dc2626; stroke-width: 2; }
+    .decision { fill: #fffbeb; stroke: #d97706; stroke-width: 2; }
+    .note { fill: #f8fafc; stroke: #cbd5e1; stroke-width: 1.5; stroke-dasharray: 4 3; }
+    .lane { stroke: #cbd5e1; stroke-width: 1.5; stroke-dasharray: 6 5; }
+    .flow { fill: none; stroke: #64748b; stroke-width: 2; marker-end: url(#arrow); }
+    .flow.alt { stroke: #dc2626; stroke-dasharray: 6 4; marker-end: url(#arrow-fail); }
+    .flow.back { stroke-dasharray: 6 4; }
+    .badge { fill: #4f46e5; }
+    .badge-text { font-size: 12px; font-weight: 700; fill: #ffffff; }
+  </style>
+
+  <rect width="1200" height="870" fill="#ffffff"/>
+
+  <text class="title" x="40" y="52">OrionKey - where it sits</text>
+  <text class="subtitle" x="40" y="78">One attribute on a partial struct; the generator writes the rest at build time, the facade mints values at run time.</text>
+
+  <!-- build time -->
+  <rect class="step" x="40" y="110" width="400" height="96" rx="14"/>
+  <text class="label" x="240" y="140" text-anchor="middle">Your id type</text>
+  <text class="code" x="240" y="168" text-anchor="middle">[OrionId&lt;long, Snowflake&gt;]</text>
+  <text class="code" x="240" y="190" text-anchor="middle">public readonly partial struct UserId;</text>
+
+  <path class="flow" d="M440,158 L538,158"/>
+  <text class="edge" x="489" y="148" text-anchor="middle">build</text>
+
+  <rect class="step" x="540" y="110" width="380" height="96" rx="14"/>
+  <text class="label" x="730" y="140" text-anchor="middle">OrionKey source generator</text>
+  <text class="small" x="730" y="164" text-anchor="middle">bundled in the OrionKey package</text>
+  <text class="small" x="730" y="186" text-anchor="middle">+ analyzers ORIONKEY001-012 and code fixes</text>
+
+  <rect class="note" x="950" y="110" width="210" height="96" rx="10"/>
+  <text class="small" x="968" y="137">No base class and no</text>
+  <text class="small" x="968" y="157">runtime reflection: plain</text>
+  <text class="small" x="968" y="177">C# partials compiled into</text>
+  <text class="small" x="968" y="197">your own assembly.</text>
+
+  <path class="flow" d="M570,206 L570,258"/>
+  <text class="edge" x="558" y="238" text-anchor="end">always</text>
+  <path class="flow" d="M860,206 L860,258"/>
+  <text class="edge" x="872" y="238">when the project references the library</text>
+
+  <!-- always generated -->
+  <rect class="step" x="40" y="260" width="550" height="286" rx="14"/>
+  <text class="label" x="60" y="290">Always generated</text>
+  <text class="code" x="60" y="322">Value, Empty, IsEmpty, New(), CreateMany(n)</text>
+  <text class="code" x="60" y="344" style="font-variant-ligatures: none">==, !=, IEquatable&lt;T&gt;, IComparable&lt;T&gt;</text>
+  <text class="code" x="60" y="366">Parse, TryParse, IParsable&lt;T&gt;, ISpanParsable&lt;T&gt;</text>
+  <text class="code" x="60" y="388">IUtf8SpanFormattable, IUtf8SpanParsable&lt;T&gt;</text>
+  <text class="code" x="60" y="410">[JsonConverter] &lt;Id&gt;JsonConverter</text>
+  <text class="code" x="60" y="432">[TypeConverter] &lt;Id&gt;TypeConverter</text>
+  <text class="code" x="60" y="454">OrionKeyJsonRegistrar.AddTo(options)</text>
+  <text class="small" x="60" y="496">New() and CreateMany() exist when the id has a strategy or is</text>
+  <text class="small" x="60" y="516">Guid-backed; int and long ids are database-assigned and have none.</text>
+
+  <!-- conditional -->
+  <rect class="step" x="610" y="260" width="550" height="286" rx="14"/>
+  <text class="label" x="630" y="290">Only when the project references it</text>
+  <text class="small" x="630" y="322" font-weight="600">EF Core</text>
+  <text class="code" x="760" y="322">&lt;Id&gt;ValueConverter</text>
+  <text class="code" x="760" y="342">HasOrionKeyConversion()</text>
+  <text class="small" x="630" y="368" font-weight="600">Dapper</text>
+  <text class="code" x="760" y="368">&lt;Id&gt;DapperTypeHandler</text>
+  <text class="code" x="760" y="388">OrionKeyDapperRegistrar.Register()</text>
+  <text class="small" x="630" y="414" font-weight="600">Newtonsoft.Json</text>
+  <text class="code" x="760" y="414">&lt;Id&gt;NewtonsoftJsonConverter</text>
+  <text class="code" x="760" y="434">OrionKeyNewtonsoftJsonRegistrar.AddTo(settings)</text>
+  <text class="small" x="630" y="460" font-weight="600">MongoDB.Driver</text>
+  <text class="code" x="760" y="460">&lt;Id&gt;BsonSerializer</text>
+  <text class="code" x="760" y="480">OrionKeyMongoRegistrar.Register()</text>
+  <text class="small" x="630" y="506" font-weight="600">Swashbuckle</text>
+  <text class="code" x="760" y="506">&lt;Id&gt;SchemaFilter</text>
+  <text class="code" x="760" y="526">OrionKeyOpenApiRegistrar.AddTo(options)</text>
+
+  <!-- run time -->
+  <text class="label" x="40" y="592">At run time</text>
+
+  <rect class="step" x="40" y="610" width="260" height="92" rx="14"/>
+  <text class="label" x="170" y="640" text-anchor="middle">Your code</text>
+  <text class="code" x="170" y="664" text-anchor="middle">UserId.New()</text>
+  <text class="small" x="170" y="688" text-anchor="middle">Guid-only ids call Guid.NewGuid()</text>
+
+  <path class="flow" d="M300,656 L378,656"/>
+
+  <rect class="step" x="380" y="610" width="400" height="92" rx="14"/>
+  <text class="label" x="580" y="640" text-anchor="middle">OrionKey static facade</text>
+  <text class="code" x="580" y="664" text-anchor="middle">OrionKey.NextSnowflake()</text>
+  <text class="small" x="580" y="688" text-anchor="middle">NewUlid(), NewGuidV7(), NewKsuid(), ... one per strategy</text>
+
+  <path class="flow" d="M780,656 L858,656"/>
+
+  <rect class="step" x="860" y="610" width="300" height="92" rx="14"/>
+  <text class="label" x="1010" y="640" text-anchor="middle">Strategy generator</text>
+  <text class="code" x="1010" y="664" text-anchor="middle">SnowflakeIdGenerator.Next()</text>
+  <text class="small" x="1010" y="688" text-anchor="middle">UlidFactory, GuidV7Factory, ...</text>
+
+  <rect class="note" x="40" y="750" width="480" height="92" rx="10"/>
+  <text class="code" x="60" y="780" style="font-variant-ligatures: none">OrionKey.Configure(o =&gt; o.SnowflakeWorkerId = 7)</text>
+  <text class="small" x="60" y="804">once at startup: SnowflakeWorkerId, SnowflakeEpoch, EnableMetrics</text>
+  <text class="small" x="60" y="826">otherwise ORIONKEY_WORKER_ID or a machine-name hash</text>
+  <path class="flow" d="M460,750 L460,704"/>
+  <text class="edge" x="470" y="732">options</text>
+
+  <rect class="step" x="560" y="750" width="280" height="92" rx="14"/>
+  <text class="label" x="700" y="778" text-anchor="middle">OrionKey.Testing</text>
+  <text class="code" x="700" y="802" text-anchor="middle">DeterministicIdScope</text>
+  <text class="small" x="700" y="826" text-anchor="middle">facade hands out 1, 2, 3, ...</text>
+  <path class="flow" d="M700,750 L700,704"/>
+  <text class="edge" x="710" y="732">overrides</text>
+
+  <rect class="step" x="880" y="750" width="280" height="92" rx="14"/>
+  <text class="label" x="1020" y="778" text-anchor="middle">OrionKey.EntityFrameworkCore</text>
+  <text class="code" x="1020" y="802" text-anchor="middle">UseOrionKeyConversions()</text>
+  <text class="small" x="1020" y="826" text-anchor="middle">wires every &lt;Id&gt;ValueConverter</text>
+</svg>
