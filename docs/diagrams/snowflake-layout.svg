@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="400" viewBox="0 0 1200 400">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+    <marker id="arrow-fail" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#dc2626"/>
+    </marker>
+  </defs>
+  <style>
+    text { font-family: "Segoe UI", Inter, "Helvetica Neue", Arial, sans-serif; fill: #1e1b4b; }
+    .title { font-size: 24px; font-weight: 700; }
+    .subtitle { font-size: 14px; fill: #475569; }
+    .label { font-size: 15px; font-weight: 600; }
+    .small { font-size: 12.5px; fill: #475569; }
+    .code { font-family: "Cascadia Code", Consolas, "SF Mono", monospace; font-size: 13px; fill: #3730a3; }
+    .edge { font-size: 12.5px; fill: #334155; }
+    .step { fill: #eef2ff; stroke: #4f46e5; stroke-width: 2; }
+    .ext { fill: #f0f9ff; stroke: #0284c7; stroke-width: 2; }
+    .ok { fill: #ecfdf5; stroke: #059669; stroke-width: 2; }
+    .fail { fill: #fef2f2; stroke: #dc2626; stroke-width: 2; }
+    .decision { fill: #fffbeb; stroke: #d97706; stroke-width: 2; }
+    .note { fill: #f8fafc; stroke: #cbd5e1; stroke-width: 1.5; stroke-dasharray: 4 3; }
+    .lane { stroke: #cbd5e1; stroke-width: 1.5; stroke-dasharray: 6 5; }
+    .flow { fill: none; stroke: #64748b; stroke-width: 2; marker-end: url(#arrow); }
+    .flow.alt { stroke: #dc2626; stroke-dasharray: 6 4; marker-end: url(#arrow-fail); }
+    .flow.back { stroke-dasharray: 6 4; }
+    .badge { fill: #4f46e5; }
+    .badge-text { font-size: 12px; font-weight: 700; fill: #ffffff; }
+  </style>
+
+  <rect width="1200" height="400" fill="#ffffff"/>
+
+  <text class="title" x="40" y="52">Snowflake id - 64-bit layout</text>
+  <text class="subtitle" x="40" y="78">A [OrionId&lt;long, Snowflake&gt;] value packs three fields into one long: time-sortable, unique per worker, allocation-free.</text>
+
+  <!-- bit positions -->
+  <text class="small" x="95" y="122" text-anchor="middle">bit 63</text>
+  <text class="small" x="410" y="122" text-anchor="middle">bits 62 - 22</text>
+  <text class="small" x="785" y="122" text-anchor="middle">bits 21 - 12</text>
+  <text class="small" x="1030" y="122" text-anchor="middle">bits 11 - 0</text>
+
+  <!-- the 64-bit bar -->
+  <rect class="step" x="40" y="134" width="110" height="96" rx="10"/>
+  <text class="label" x="95" y="172" text-anchor="middle">sign</text>
+  <text class="small" x="95" y="196" text-anchor="middle">1 bit</text>
+  <text class="small" x="95" y="216" text-anchor="middle">always 0</text>
+
+  <rect class="step" x="150" y="134" width="520" height="96" rx="10"/>
+  <text class="label" x="410" y="172" text-anchor="middle">timestamp</text>
+  <text class="small" x="410" y="196" text-anchor="middle">41 bits</text>
+  <text class="small" x="410" y="216" text-anchor="middle">milliseconds since SnowflakeEpoch</text>
+
+  <rect class="decision" x="670" y="134" width="230" height="96" rx="10"/>
+  <text class="label" x="785" y="172" text-anchor="middle">worker id</text>
+  <text class="small" x="785" y="196" text-anchor="middle">10 bits</text>
+  <text class="small" x="785" y="216" text-anchor="middle">0 .. 1023</text>
+
+  <rect class="step" x="900" y="134" width="260" height="96" rx="10"/>
+  <text class="label" x="1030" y="172" text-anchor="middle">sequence</text>
+  <text class="small" x="1030" y="196" text-anchor="middle">12 bits</text>
+  <text class="small" x="1030" y="216" text-anchor="middle">0 .. 4095 per millisecond</text>
+
+  <!-- where each field comes from -->
+  <rect class="note" x="40" y="256" width="370" height="76" rx="10"/>
+  <text class="small" x="58" y="282">Timestamp: clock minus OrionKeyOptions.SnowflakeEpoch</text>
+  <text class="small" x="58" y="304">(default 2025-01-01 UTC). The sign bit stays 0 for</text>
+  <text class="small" x="58" y="324">about 69 years after the epoch.</text>
+
+  <rect class="note" x="430" y="256" width="370" height="76" rx="10"/>
+  <text class="small" x="448" y="282">Worker id: the only field you set. SnowflakeWorkerId,</text>
+  <text class="small" x="448" y="304">else ORIONKEY_WORKER_ID, else a machine-name hash.</text>
+  <text class="small" x="448" y="324">Give every running instance its own value.</text>
+
+  <rect class="note" x="820" y="256" width="340" height="76" rx="10"/>
+  <text class="small" x="838" y="282">Sequence: 0 on a new millisecond, +1 within</text>
+  <text class="small" x="838" y="304">the same one; after 4095 the generator waits</text>
+  <text class="small" x="838" y="324">for the next millisecond.</text>
+
+  <text class="code" x="40" y="370" style="font-variant-ligatures: none">id = (timestamp - epoch) &lt;&lt; 22  |  workerId &lt;&lt; 12  |  sequence</text>
+</svg>

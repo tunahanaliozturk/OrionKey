@@ -6,11 +6,11 @@ with its own spec, plan, tests, and changelog entry; this document is the living
 a planning artifact, not a contract - dates slip, priorities reshuffle. If an item here
 matters to you, open a GitHub issue so we can weigh it against everything else.
 
-**Current release: `0.6.2`** (2026-06-20). Latest work: a reflection-free, AOT/trimming-safe
-System.Text.Json source-generation path (`OrionKeyJsonRegistrar.AddTo`), the sortable
-`MonotonicHex` string strategy (both `0.6.0`), and a single-allocation lowercase-hex
-formatting pass on the hex-rendered strategies (`0.6.2`). Next minor is `0.7.0` (composite
-ids and the remaining strategy/emitter work); `1.0.0` freezes the public API.
+**Current release: `0.8.0`** (2026-07-28). `0.7.0` shipped the `OrionKey.EntityFrameworkCore`
+package (model-wide value-converter registration); `0.8.0` adopted the family metric name
+`orion.key.ids.generated` and re-armed the NuGet audit. The remaining Phase F items (composite
+ids, `Tsid` / `Xid`, minimal-API route binding) move to the next minor; `1.0.0` freezes the
+public API.
 
 Status legend: **Done** (shipped) · **Planned** (designed, target window committed) ·
 **Considered** (interesting but unscheduled, needs a concrete use case) · **Out of scope**
@@ -164,31 +164,40 @@ phase shipped earlier, in `0.5.27` / `0.5.28`.
 
 ---
 
-## Phase F - `0.7.0` · Composite IDs & extra strategies
+## `0.7.0` · EF Core value-converter ergonomics
 
-**Status:** Planned · **Target:** Q4 2026
+**Status:** Done · **Shipped:** 2026-07-20 · [Changelog](../CHANGELOG.md#070---2026-07-20)
 
-The last 0.x feature release before the API freeze. Carries the composite-id work and the
-remaining strategies that did not make `0.6.0`, so each gets a real production cycle before
-`1.0.0` locks the surface.
+- New `OrionKey.EntityFrameworkCore` package: `modelBuilder.UseOrionKeyConversions()` wires the
+  converter for every `[OrionId]` property in one call; `ConfigureOrionKeyConversions(...)` is the
+  `ConfigureConventions` counterpart; `HasOrionKeyConversion<TId, TValue>()` is the reflection-free,
+  AOT-safe per-property helper.
+
+## `0.8.0` · Telemetry naming and audit
+
+**Status:** Done · **Shipped:** 2026-07-28 · [Changelog](../CHANGELOG.md#080---2026-07-28)
+
+- The generated-ids counter is `orion.key.ids.generated` (was `orionkey.ids.generated`), matching
+  the family convention. Breaking for dashboards only.
+- NuGet audit re-armed across the transitive graph; three test-only advisories pinned.
+
+---
+
+## Phase F - next minor · Composite IDs & extra strategies
+
+**Status:** Planned · **Target:** no date set
+
+The last 0.x feature release before the API freeze. The EF Core ergonomics item shipped on its
+own in `0.7.0`; the rest is still open.
 
 - **Multi-value / composite IDs.** `[OrionId(typeof((Guid TenantId, long LocalId)))]` for
   domains that genuinely need a compound key. Equality, ordering, parsing, `System.Text.Json`,
   and EF Core value conversion all extend to the tuple shape; the EF Core path emits the
   per-component column split rather than a single opaque blob.
-- **`Tsid` and `Xid` strategies** added to the existing strategy matrix. Both are widely-used
-  k-sortable formats and slot in next to `Ksuid` / `Cuid2` / `MonotonicHex` without
-  architectural changes.
-- **EF Core value-converter ergonomics.** A model-wide
-  `modelBuilder.UseOrionKeyConversions()` (or convention) that registers every `[OrionId]`
-  converter in one call, so consumers stop wiring `HasOrionKeyConversion()` property by
-  property. Complements the per-property helper shipped in `0.5.10`.
+- **`Tsid` and `Xid` strategies** added to the existing strategy matrix.
 - **Minimal-API route-binding helper.** A small `AddOrionKeyRouteBinding()` /
   `IParsable`-backed binder so `[OrionId]` types bind from route and query values with a clear
   400 on malformed input, on top of the `TypeConverter` path that already works today.
-
-Composite ids are the large item here; if they slip, the strategy and ergonomics items ship on
-their own and composites move to a `0.7.x` follow-up rather than holding the release.
 
 ---
 
