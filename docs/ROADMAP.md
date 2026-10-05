@@ -126,7 +126,7 @@ breaking one.
 **Status:** Done · **Shipped:** 2026-06-19 · [Changelog](../CHANGELOG.md#060---2026-06-19)
 
 Shipped the two highest-signal items that were ready, ahead of the composite-id work that
-moved to `0.7.0`.
+is still open in Phase F.
 
 - **System.Text.Json source-generation path.** `OrionKeyJsonConverterFactory`, a
   reflection-free `JsonConverterFactory` that resolves every `[OrionId]` type through a
@@ -278,7 +278,9 @@ If any of the above maps to a real workload you are on right now, open an issue 
 | v0.5.0-v0.5.31 | shipped 2026-06-17 | Analyzers, code-fixes, generator perf, parse/format surface |
 | v0.6.0         | shipped 2026-06-19 | System.Text.Json source-gen path & MonotonicHex             |
 | v0.6.2         | shipped 2026-06-20 | Single-allocation lowercase-hex formatting                  |
-| v0.7.0         | Q4 2026            | Composite IDs, Tsid/Xid, EF Core & route-binding ergonomics |
+| v0.7.0         | shipped 2026-07-20 | OrionKey.EntityFrameworkCore value-converter package        |
+| v0.8.0         | shipped 2026-07-28 | orion.key.ids.generated metric name, NuGet audit            |
+| next minor     | no date set        | Composite IDs, Tsid/Xid, minimal-API route binding          |
 | v1.0.0         | Q2 2027            | API freeze, AOT guarantee, LTS window                       |
 
 Patch releases ship as needed for bugs and security. Minor releases cluster features around
